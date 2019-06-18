@@ -22,7 +22,7 @@ function Body(x, y, mass, friction, restitution) {
 
   if (this.invMass !== 0) {
     this.invMass = 1 / this.invMass;
-    this.acceleration = Vec2(0, 10);
+    this.acceleration = Vec2(0, 50);
   } else {
     this.acceleration = new Vec2(0, 0);
   }

@@ -6,15 +6,17 @@ function Engine(name) {
 
   this.currentTime;
   this.elapsedTime;
-  this.previousTime;
-  this.lagTime;
+  this.previousTime = Date.now();
+  this.lagTime = 0;
 
   this.kFPS = 60;
   this.frameTime = 1 / this.kFPS;
   this.updateIntervalInSeconds = this.frameTime;
+  this.kMPF = 1000 * this.frameTime; //Milliseconds per frame
 
-  self.allBodies = [];
+  this.allBodies = [];
   this.gravity = Vec2(0, 10);
+  this.physics = new Kala.Physics();
 
   this.add = function(bodies) {
     if (Array.isArray(bodies)) {
@@ -32,10 +34,10 @@ function Engine(name) {
 
   this.update = function() {
     for (var i = 0; i < this.allBodies.length; i++) {
-      console.log(this.allBodies[i].center);
+      //console.log(this.allBodies[i].center);
       this.allBodies[i].update(this);
     }
-    console.log("Looped");
+    //console.log("Looped");
   };
 
   this.runGameLoop = function() {
@@ -49,8 +51,11 @@ function Engine(name) {
     self.lagTime += self.elapsedTime;
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
+      this.physics.collision(this);
+      this.update();
     }
-    this.update();
+
+    //this.update();
   };
 
   this.initializeEngineCore = function() {

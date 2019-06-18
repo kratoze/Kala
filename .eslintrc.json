@@ -12,7 +12,8 @@
     "Body": "writable",
     "Engine": "writable",
     "Circle": "writable",
-    "Recatngle": "writable"
+    "Rectangle": "writable",
+    "Physics": "writable"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

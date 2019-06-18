@@ -1,9 +1,9 @@
-var Circle = function(center, radius, mass, friction, restitution) {
-  Body.call(this, center, mass, friction, restitution);
+var Circle = function(x, y, radius, mass, friction, restitution) {
+  Body.call(this, x, y, mass, friction, restitution);
   this.type = "Circle";
   this.radius = radius;
   this.boundRadius = radius;
-  this.startPoint = Vec2(center.x, center.y - radius);
+  this.startPoint = Vec2(x, y - radius);
   this.updateInertia();
 };
 
