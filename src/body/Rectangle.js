@@ -26,9 +26,7 @@ var Rectangle = function(x, y, width, height, mass, friction, restitution) {
   this.updateInertia();
 };
 
-var prototype = Object.create(Body.prototype);
-prototype.constructor = Rectangle;
-Rectangle.prototype = prototype;
+Common.extend(Rectangle, Body);
 
 // Rectangle.prototype.draw = function(context) {
 //   context.save();

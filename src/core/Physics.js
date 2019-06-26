@@ -87,10 +87,10 @@ function Physics() {
     var r2 = p.subtract(s2.center);
 
     var v1 = s1.velocity.add(
-      new Vec2(-1 * s1.angularVelocity * r1.y, s1.angularVelocity * r1.x)
+      Vec2(-1 * s1.angularVelocity * r1.y, s1.angularVelocity * r1.x)
     );
     var v2 = s2.velocity.add(
-      new Vec2(-1 * s2.angularVelocity * r2.y, s2.angularVelocity * r2.x)
+      Vec2(-1 * s2.angularVelocity * r2.y, s2.angularVelocity * r2.x)
     );
     var relativeVelocity = v2.subtract(v1);
 

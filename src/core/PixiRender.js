@@ -5,6 +5,7 @@ function PixiRender() {
     backgroundColor: 0xfcfccf,
     forceCanvas: true
   });
+  this.app.stage.scale.x = this.app.stage.scale.y = 4;
   this.graphics = new PIXI.Graphics();
 
   // set the line style to have a width of 5 and set the color to red
@@ -26,12 +27,12 @@ function PixiRender() {
 
   this.addSprite = function(body) {
     if (body.type === "Rectangle") {
-      var r = new PIXI.Sprite.from("imgs/box.png");
+      var r = new PIXI.Sprite.from("imgs/bluebox.png");
       r.anchor.x = r.anchor.y = 0.5;
       r.width = body.width;
       r.height = body.height;
-      // r.scale.x = body.width / 20;
-      // r.scale.y = body.height / 20;
+      r.position.x = body.center.x;
+      r.position.y = body.center.y;
       this.allRenderBodies.push(r);
       this.app.stage.addChild(
         this.allRenderBodies[this.allRenderBodies.length - 1]
@@ -42,6 +43,8 @@ function PixiRender() {
       var c = new PIXI.Sprite.from("imgs/circle.png");
       c.anchor.x = c.anchor.y = 0.5;
       c.height = c.width = body.radius * 2;
+      c.position.x = body.center.x;
+      c.position.y = body.center.y;
       this.allRenderBodies.push(c);
       this.app.stage.addChild(
         this.allRenderBodies[this.allRenderBodies.length - 1]

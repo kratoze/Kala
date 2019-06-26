@@ -22,7 +22,7 @@ function Body(x, y, mass, friction, restitution) {
 
   if (this.invMass !== 0) {
     this.invMass = 1 / this.invMass;
-    this.acceleration = Vec2(0, 50);
+    this.acceleration = Vec2(0, 10);
   } else {
     this.acceleration = new Vec2(0, 0);
   }
@@ -40,9 +40,12 @@ Body.prototype.update = function(engine) {
   if (engine.movement) {
     var dt = engine.updateIntervalInSeconds;
     // v += a*t
-    this.velocity = this.velocity.add(this.acceleration.scale(dt));
     // s += v*t
+    this.velocity = this.velocity.add(this.acceleration.scale(dt));
+
     this.move(this.velocity.scale(dt));
+    //position += timestep * (velocity + timestep * acceleration / 2);
+
     this.angularVelocity += this.angularAcceleration * dt;
     this.rotate(this.angularVelocity * dt);
   }

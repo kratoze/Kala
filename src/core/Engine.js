@@ -1,21 +1,21 @@
-function Engine(name) {
+function Engine() {
   var self = this;
-  this.name = name;
   this.gravity = Vec2(0, 10);
   this.movement = false;
 
   this.currentTime;
   this.elapsedTime;
-  this.previousTime = Date.now();
+  this.previousTime = performance.now();
   this.lagTime = 0;
-
   this.kFPS = 60;
   this.frameTime = 1 / this.kFPS;
   this.updateIntervalInSeconds = this.frameTime;
   this.kMPF = 1000 * this.frameTime; //Milliseconds per frame
 
+  this.lastTimeCalled;
+  this.fps;
+
   this.allBodies = [];
-  this.gravity = Vec2(0, 10);
   this.physics = new Kala.Physics();
 
   this.add = function(bodies) {
@@ -40,25 +40,31 @@ function Engine(name) {
     //console.log("Looped");
   };
 
-  this.runGameLoop = function() {
+  this.runGameLoop = function(render, constraints) {
     requestAnimationFrame(function() {
-      self.runGameLoop();
+      self.runGameLoop(render, constraints);
     });
 
-    self.currentTime = Date.now();
+    self.currentTime = performance.now();
     self.elapsedTime = self.currentTime - self.previousTime;
     self.previousTime = self.currentTime;
     self.lagTime += self.elapsedTime;
+    if (render) {
+      render.update(this);
+    }
+
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
+      if (constraints) {
+        constraints.maintainConstraint();
+      }
       this.physics.collision(this);
       this.update();
     }
-
     //this.update();
   };
 
-  this.initializeEngineCore = function() {
-    self.runGameLoop();
+  this.initializeEngineCore = function(render, constraints) {
+    self.runGameLoop(render, constraints);
   };
 }

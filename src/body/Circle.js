@@ -7,9 +7,7 @@ var Circle = function(x, y, radius, mass, friction, restitution) {
   this.updateInertia();
 };
 
-var prototype = Object.create(Body.prototype);
-prototype.constructor = Circle;
-Circle.prototype = prototype;
+Common.extend(Circle, Body);
 
 // Circle.prototype.draw = function(context) {
 //   context.beginPath();

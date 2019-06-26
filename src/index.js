@@ -8,6 +8,7 @@ Kala = (function() {
   Kala.Rectangle = Rectangle;
   Kala.Circle = Circle;
   Kala.Render = PixiRender;
-
+  Kala.Common = Common;
+  Kala.Constraint = Constraint;
   return Kala;
 })();
