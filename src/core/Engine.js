@@ -1,6 +1,7 @@
 function Engine() {
+  //this.gravity = Vec2(0, 10);
+
   var self = this;
-  this.gravity = Vec2(0, 10);
   this.movement = false;
 
   this.currentTime;
@@ -16,22 +17,30 @@ function Engine() {
   this.fps;
 
   this.allBodies = [];
+  this.allConstraints = [];
   this.physics = new Kala.Physics();
 
   this.add = function(bodies) {
     if (Array.isArray(bodies)) {
       bodies.forEach(function(body) {
-        if (body instanceof Body) self.allBodies.push(body);
+        if (body instanceof Body) {
+          //self.applyGravity(body);
+          self.allBodies.push(body);
+        }
       });
-      console.log("Array of Bodies added");
+      console.log("Array of Bodies added : Engine");
     } else if (bodies instanceof Body) {
+      //self.applyGravity(bodies);
       self.allBodies.push(bodies);
-      console.log("Body added");
+      console.log("Body added : Engine");
     } else {
       throw "Only objects of type Body can be added to the engine";
     }
   };
 
+  this.addConstraint = function(constraint) {
+    this.allConstraints.push(constraint);
+  };
   this.update = function() {
     for (var i = 0; i < this.allBodies.length; i++) {
       //console.log(this.allBodies[i].center);
@@ -39,10 +48,18 @@ function Engine() {
     }
     //console.log("Looped");
   };
+  //
+  // this.applyGravity = function(body) {
+  //   if (body.invMass !== 0) {
+  //     body.acceleration = self.gravity;
+  //   } else {
+  //     body.acceleration = Vec2(0, 0);
+  //   }
+  // };
 
-  this.runGameLoop = function(render, constraints) {
+  this.runGameLoop = function(render) {
     requestAnimationFrame(function() {
-      self.runGameLoop(render, constraints);
+      self.runGameLoop(render);
     });
 
     self.currentTime = performance.now();
@@ -55,8 +72,8 @@ function Engine() {
 
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
-      if (constraints) {
-        constraints.maintainConstraint();
+      if (this.allConstraints.length != 0) {
+        this.physics.maintainConstraints(this);
       }
       this.physics.collision(this);
       this.update();
@@ -64,7 +81,9 @@ function Engine() {
     //this.update();
   };
 
-  this.initializeEngineCore = function(render, constraints) {
-    self.runGameLoop(render, constraints);
+  this.initializeEngineCore = function(render) {
+    self.runGameLoop(render);
   };
 }
+
+Engine.gravity = Vec2(0, 10);

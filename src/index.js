@@ -10,5 +10,6 @@ Kala = (function() {
   Kala.Render = PixiRender;
   Kala.Common = Common;
   Kala.Constraint = Constraint;
+
   return Kala;
 })();

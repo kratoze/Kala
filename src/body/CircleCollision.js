@@ -30,13 +30,13 @@ Circle.prototype.collidedCircCirc = function(c1, c2, collisionInfo) {
       collisionInfo.setInfo(
         rSum,
         new Vec2(0, -1),
-        c1.center.add(new Vec2(0, c1.radius))
+        c1.center.add(Vec2(0, c1.radius))
       );
     } else {
       collisionInfo.setInfo(
         rSum,
         new Vec2(0, -1),
-        c2.center.add(new Vec2(0, c2.radius))
+        c2.center.add(Vec2(0, c2.radius))
       );
     }
   }

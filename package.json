@@ -14,5 +14,8 @@
   "license": "ISC",
   "devDependencies": {
     "eslint": "^5.16.0"
+  },
+  "dependencies": {
+    "pixi.js": "^5.0.4"
   }
 }

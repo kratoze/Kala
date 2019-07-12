@@ -1,18 +1,36 @@
 function PixiRender() {
+  var self = this;
+  //Set up PIXI
   this.app = new PIXI.Application({
-    height: 500,
-    width: 500,
+    height: 1000,
+    width: 1000,
     backgroundColor: 0xfcfccf,
-    forceCanvas: true
+    forceCanvas: true,
+    antialias: true
   });
-  this.app.stage.scale.x = this.app.stage.scale.y = 4;
-  this.graphics = new PIXI.Graphics();
-
-  // set the line style to have a width of 5 and set the color to red
-  this.graphics.lineStyle(5, 0xb8b6ff);
+  document.body.appendChild(this.app.view);
+  this.app.stop();
+  this.app.stage.scale.x = this.app.stage.scale.y = 20;
 
   this.allRenderBodies = [];
+  this.loader = PIXI.Loader.shared;
 
+  var sprites = {};
+
+  //Load spritesheet
+  this.isLoaded = false;
+
+  this.loader.add("sheet", "imgs/spritesheet_metal.json").load(onAssetsLoaded);
+  this.loader.onComplete.add(() => {
+    this.app.start();
+    this.isLoaded = true;
+  });
+
+  function onAssetsLoaded() {
+    sprites.rectTexture =
+      self.loader.resources["sheet"].textures["elementMetal011.png"];
+    console.log("loaded");
+  }
   this.addRect = function(rect) {
     var r1 = this.graphics.drawRect(0, 0, rect.width, rect.height);
 
@@ -27,12 +45,14 @@ function PixiRender() {
 
   this.addSprite = function(body) {
     if (body.type === "Rectangle") {
-      var r = new PIXI.Sprite.from("imgs/bluebox.png");
+      console.log("sprite rect");
+      var r = new PIXI.Sprite(sprites.rectTexture);
       r.anchor.x = r.anchor.y = 0.5;
-      r.width = body.width;
-      r.height = body.height;
       r.position.x = body.center.x;
       r.position.y = body.center.y;
+      r.width = body.width;
+      r.height = body.height;
+
       this.allRenderBodies.push(r);
       this.app.stage.addChild(
         this.allRenderBodies[this.allRenderBodies.length - 1]
@@ -56,16 +76,11 @@ function PixiRender() {
     if (Array.isArray(bodies)) {
       for (let i = 0; i < bodies.length; i++) {
         this.addSprites(bodies[i]);
-        console.log("body added");
+        console.log("body added : Render");
       }
     } else {
       this.addSprite(bodies);
     }
-  };
-
-  this.init = function() {
-    document.body.appendChild(this.app.view);
-    //this.app.stage.addChild(this.graphics);
   };
 
   this.update = function(engine) {
@@ -85,8 +100,3 @@ function PixiRender() {
     }
   };
 }
-
-/*Create function to add all engine bodies to PIXI world.
- * Refactor physics from book
- *
- */

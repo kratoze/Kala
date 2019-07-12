@@ -53,6 +53,20 @@ function Physics() {
     }
   };
 
+  var maintainConstraints = function(engine) {
+    var i;
+    var collisionInfo = new CollisionInfo();
+    for (i = 0; i < engine.allConstraints.length; i++) {
+      if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
+        resolveCollision(
+          engine.allConstraints[i].bodyA,
+          engine.allConstraints[i].bodyB,
+          collisionInfo
+        );
+      }
+    }
+  };
+
   var positionalCorrection = function(s1, s2, collisionInfo) {
     var s1InvMass = s1.invMass;
     var s2InvMass = s2.invMass;
@@ -158,6 +172,7 @@ function Physics() {
 
   var mPublic = {
     collision: collision,
+    maintainConstraints: maintainConstraints,
     positionalCorrectionFlag: positionalCorrectionFlag
   };
   return mPublic;

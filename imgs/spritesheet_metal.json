@@ -1,0 +1,416 @@
+{
+  "frames": {
+    "elementMetal000.png": {
+      "frame": { "x": 360, "y": 790, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal001.png": {
+      "frame": { "x": 500, "y": 640, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal002.png": {
+      "frame": { "x": 780, "y": 0, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal003.png": {
+      "frame": { "x": 220, "y": 930, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal004.png": {
+      "frame": { "x": 780, "y": 70, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal005.png": {
+      "frame": { "x": 710, "y": 930, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal006.png": {
+      "frame": { "x": 220, "y": 350, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal007.png": {
+      "frame": { "x": 710, "y": 860, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal008.png": {
+      "frame": { "x": 710, "y": 790, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal009.png": {
+      "frame": { "x": 220, "y": 280, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal010.png": {
+      "frame": { "x": 710, "y": 650, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal011.png": {
+      "frame": { "x": 710, "y": 580, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal012.png": {
+      "frame": { "x": 360, "y": 70, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal013.png": {
+      "frame": { "x": 0, "y": 140, "w": 220, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 70 },
+      "sourceSize": { "w": 220, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal014.png": {
+      "frame": { "x": 710, "y": 220, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal015.png": {
+      "frame": { "x": 500, "y": 570, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal016.png": {
+      "frame": { "x": 0, "y": 350, "w": 220, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 70 },
+      "sourceSize": { "w": 220, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal017.png": {
+      "frame": { "x": 640, "y": 650, "w": 70, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 140 },
+      "sourceSize": { "w": 70, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal018.png": {
+      "frame": { "x": 500, "y": 0, "w": 140, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 140 },
+      "sourceSize": { "w": 140, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal019.png": {
+      "frame": { "x": 0, "y": 700, "w": 220, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "sourceSize": { "w": 220, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal020.png": {
+      "frame": { "x": 640, "y": 220, "w": 70, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 220 },
+      "sourceSize": { "w": 70, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal021.png": {
+      "frame": { "x": 500, "y": 140, "w": 140, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 220 },
+      "sourceSize": { "w": 140, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal022.png": {
+      "frame": { "x": 570, "y": 850, "w": 70, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 140 },
+      "sourceSize": { "w": 70, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal023.png": {
+      "frame": { "x": 500, "y": 430, "w": 140, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 140 },
+      "sourceSize": { "w": 140, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal024.png": {
+      "frame": { "x": 0, "y": 210, "w": 220, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "sourceSize": { "w": 220, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal025.png": {
+      "frame": { "x": 710, "y": 360, "w": 70, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 220 },
+      "sourceSize": { "w": 70, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal026.png": {
+      "frame": { "x": 360, "y": 280, "w": 140, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 220 },
+      "sourceSize": { "w": 140, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal027.png": {
+      "frame": { "x": 640, "y": 580, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal028.png": {
+      "frame": { "x": 360, "y": 720, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal029.png": {
+      "frame": { "x": 220, "y": 0, "w": 220, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 70 },
+      "sourceSize": { "w": 220, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal030.png": {
+      "frame": { "x": 710, "y": 720, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal031.png": {
+      "frame": { "x": 500, "y": 360, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal032.png": {
+      "frame": { "x": 0, "y": 910, "w": 220, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 70 },
+      "sourceSize": { "w": 220, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal033.png": {
+      "frame": { "x": 570, "y": 710, "w": 70, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 140 },
+      "sourceSize": { "w": 70, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal034.png": {
+      "frame": { "x": 360, "y": 860, "w": 140, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 140 },
+      "sourceSize": { "w": 140, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal035.png": {
+      "frame": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "sourceSize": { "w": 220, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal036.png": {
+      "frame": { "x": 640, "y": 0, "w": 70, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 220 },
+      "sourceSize": { "w": 70, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal037.png": {
+      "frame": { "x": 360, "y": 500, "w": 140, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 220 },
+      "sourceSize": { "w": 140, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal038.png": {
+      "frame": { "x": 500, "y": 850, "w": 70, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 140 },
+      "sourceSize": { "w": 70, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal039.png": {
+      "frame": { "x": 360, "y": 140, "w": 140, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 140 },
+      "sourceSize": { "w": 140, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal040.png": {
+      "frame": { "x": 0, "y": 560, "w": 220, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "sourceSize": { "w": 220, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal041.png": {
+      "frame": { "x": 710, "y": 0, "w": 70, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 220 },
+      "sourceSize": { "w": 70, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal042.png": {
+      "frame": { "x": 220, "y": 710, "w": 140, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 220 },
+      "sourceSize": { "w": 140, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal043.png": {
+      "frame": { "x": 500, "y": 710, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal044.png": {
+      "frame": { "x": 220, "y": 420, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal045.png": {
+      "frame": { "x": 500, "y": 780, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal046.png": {
+      "frame": { "x": 780, "y": 196, "w": 56, "h": 61 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 56, "h": 61 },
+      "sourceSize": { "w": 56, "h": 61 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal047.png": {
+      "frame": { "x": 780, "y": 140, "w": 64, "h": 56 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 56 },
+      "sourceSize": { "w": 64, "h": 56 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal048.png": {
+      "frame": { "x": 440, "y": 0, "w": 58, "h": 53 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 58, "h": 53 },
+      "sourceSize": { "w": 58, "h": 53 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal049.png": {
+      "frame": { "x": 570, "y": 640, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal050.png": {
+      "frame": { "x": 220, "y": 210, "w": 140, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 70 },
+      "sourceSize": { "w": 140, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal051.png": {
+      "frame": { "x": 0, "y": 840, "w": 220, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 70 },
+      "sourceSize": { "w": 220, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal052.png": {
+      "frame": { "x": 640, "y": 440, "w": 70, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 140 },
+      "sourceSize": { "w": 70, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal053.png": {
+      "frame": { "x": 220, "y": 70, "w": 140, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 140 },
+      "sourceSize": { "w": 140, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal054.png": {
+      "frame": { "x": 0, "y": 420, "w": 220, "h": 140 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 140 },
+      "sourceSize": { "w": 220, "h": 140 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal055.png": {
+      "frame": { "x": 640, "y": 790, "w": 70, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 220 },
+      "sourceSize": { "w": 70, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal056.png": {
+      "frame": { "x": 220, "y": 490, "w": 140, "h": 220 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 220 },
+      "sourceSize": { "w": 140, "h": 220 },
+      "rotated": false,
+      "trimmed": false
+    },
+    "elementMetal057.png": {
+      "frame": { "x": 710, "y": 290, "w": 70, "h": 70 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 70, "h": 70 },
+      "sourceSize": { "w": 70, "h": 70 },
+      "rotated": false,
+      "trimmed": false
+    }
+  },
+  "meta": {
+    "app": "TextureAtlasConverter",
+    "version": 1,
+    "sprites": 58,
+    "image": "spritesheet_metal.png"
+  }
+}

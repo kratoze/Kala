@@ -19,10 +19,9 @@ function Body(x, y, mass, friction, restitution) {
   }
 
   this.velocity = Vec2(0, 0);
-
   if (this.invMass !== 0) {
     this.invMass = 1 / this.invMass;
-    this.acceleration = Vec2(0, 10);
+    this.acceleration = Engine.gravity;
   } else {
     this.acceleration = new Vec2(0, 0);
   }
@@ -81,6 +80,14 @@ Body.prototype.updateMass = function(delta) {
     this.acceleration = Kala.Engine.gravity;
   }
   this.updateInertia();
+};
+
+Body.prototype.addAcceleration = function(vec) {
+  this.acceleration = this.acceleration.add(vec);
+};
+
+Body.prototype.subtractAcceleration = function(vec) {
+  this.acceleration = this.acceleration.subtract(vec);
 };
 
 Body.prototype.updateInertia = function() {
