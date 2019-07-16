@@ -1,5 +1,5 @@
-var Circle = function(x, y, radius, mass, friction, restitution) {
-  Body.call(this, x, y, mass, friction, restitution);
+var Circle = function(x, y, radius, mass, friction, restitution, options) {
+  Body.call(this, x, y, mass, friction, restitution, options);
   this.type = "Circle";
   this.radius = radius;
   this.boundRadius = radius;

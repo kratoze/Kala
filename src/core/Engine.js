@@ -1,6 +1,4 @@
 function Engine() {
-  //this.gravity = Vec2(0, 10);
-
   var self = this;
   this.movement = false;
 
@@ -19,6 +17,8 @@ function Engine() {
   this.allBodies = [];
   this.allConstraints = [];
   this.physics = new Kala.Physics();
+  this.events = new Kala.Events();
+  this.collisionResponse;
 
   this.add = function(bodies) {
     if (Array.isArray(bodies)) {
@@ -38,24 +38,18 @@ function Engine() {
     }
   };
 
+  this.removeBody = function(bodyIndex) {
+    this.allBodies.splice(bodyIndex, 1);
+  };
+
   this.addConstraint = function(constraint) {
     this.allConstraints.push(constraint);
   };
   this.update = function() {
     for (var i = 0; i < this.allBodies.length; i++) {
-      //console.log(this.allBodies[i].center);
       this.allBodies[i].update(this);
     }
-    //console.log("Looped");
   };
-  //
-  // this.applyGravity = function(body) {
-  //   if (body.invMass !== 0) {
-  //     body.acceleration = self.gravity;
-  //   } else {
-  //     body.acceleration = Vec2(0, 0);
-  //   }
-  // };
 
   this.runGameLoop = function(render) {
     requestAnimationFrame(function() {
@@ -69,16 +63,25 @@ function Engine() {
     if (render) {
       render.update(this);
     }
+    if (this.events.customEvents) {
+      Object.values(this.events.customEvents).forEach(value => {
+        value.call();
+      });
+    }
 
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
       if (this.allConstraints.length != 0) {
         this.physics.maintainConstraints(this);
       }
-      this.physics.collision(this);
-      this.update();
+      this.collisionResponse = this.physics.collision(this);
+      if (this.collisionResponse) {
+        Object.values(this.events.collisionEvents).forEach(value => {
+          value.call();
+        });
+      }
     }
-    //this.update();
+    this.update();
   };
 
   this.initializeEngineCore = function(render) {

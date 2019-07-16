@@ -1,4 +1,4 @@
-function Body(x, y, mass, friction, restitution) {
+function Body(x, y, mass, friction, restitution, options) {
   this.center = Vec2(x, y);
   this.inertia = 0;
   if (mass !== undefined) {
@@ -33,6 +33,17 @@ function Body(x, y, mass, friction, restitution) {
   this.angularVelocity = 0;
   this.angularAcceleration = 0;
   this.boundRadius = 0;
+  this.isSensor = false;
+  if (options) {
+    if (options.isSensor != undefined) {
+      this.isSensor = options.isSensor;
+    } else {
+      this.isSensor = false;
+    }
+    if (options.name) {
+      this.name = options.name;
+    }
+  }
 }
 
 Body.prototype.update = function(engine) {

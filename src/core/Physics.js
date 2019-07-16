@@ -18,6 +18,7 @@ function Physics() {
   var collision = function(engine) {
     var i, j, k;
     var collisionInfo = new CollisionInfo();
+    var collisionResponse = {};
     for (k = 0; k < relaxationCount; k++) {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
@@ -41,11 +42,26 @@ function Physics() {
               }
               //draw the normal
               //drawCollisionInfo(collisionInfo, gEngine.Core.mContext);
-              resolveCollision(
-                engine.allBodies[i],
-                engine.allBodies[j],
-                collisionInfo
-              );
+              if (
+                engine.allBodies[i].isSensor === true ||
+                engine.allBodies[j].isSensor === true
+              ) {
+                collisionResponse = {
+                  bodyA: engine.allBodies[i],
+                  bodyB: engine.allBodies[j],
+                  bodyAIndex: i,
+                  bodyBIndex: j,
+                  collisionInfo: collisionInfo,
+                  hasCollided: true
+                };
+                return collisionResponse;
+              } else {
+                resolveCollision(
+                  engine.allBodies[i],
+                  engine.allBodies[j],
+                  collisionInfo
+                );
+              }
             }
           }
         }

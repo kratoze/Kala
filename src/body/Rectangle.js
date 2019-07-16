@@ -1,5 +1,14 @@
-var Rectangle = function(x, y, width, height, mass, friction, restitution) {
-  Body.call(this, x, y, mass, friction, restitution);
+var Rectangle = function(
+  x,
+  y,
+  width,
+  height,
+  mass,
+  friction,
+  restitution,
+  options
+) {
+  Body.call(this, x, y, mass, friction, restitution, options);
   this.type = "Rectangle";
   this.width = width;
   this.height = height;

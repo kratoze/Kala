@@ -83,6 +83,11 @@ function PixiRender() {
     }
   };
 
+  this.removeSprite = function(spriteIndex) {
+    this.allRenderBodies.splice(spriteIndex, 1);
+    this.app.stage.removeChildAt(spriteIndex);
+  };
+
   this.update = function(engine) {
     var engineBodies = engine.allBodies;
     for (let i = 0; i < this.allRenderBodies.length; i++) {
