@@ -1,5 +1,5 @@
 var engine = new Kala.Engine();
-var render = new Kala.Render();
+var render = new Kala.Render("space");
 
 //Game
 var scale = 20;
@@ -30,6 +30,7 @@ render.loader.onComplete.add(() => {
 
 var turnSpeed = 5;
 var maxSpeed = 15;
+var bulletSpeed = 20;
 var thrust;
 
 var LEFT = false;
@@ -75,11 +76,12 @@ function playerControlsEvent() {
   } else if (RIGHT) {
     // D
     engine.allBodies[0].angularAcceleration = turnSpeed;
-  } else if (UP) {
+  }
+  if (UP) {
     // W
     console.log(engine.allBodies[0].acceleration);
 
-    thrust = calculateShipDirection(engine.allBodies[0].angle);
+    thrust = Vec2(0, 0).vectorFromAngle(maxSpeed, engine.allBodies[0].angle);
     engine.allBodies[0].acceleration = thrust;
   }
 
@@ -104,7 +106,10 @@ function playerControlsEvent() {
       1,
       { isSensor: true, name: "bullet" }
     );
-    bullet.velocity = calculateShipDirection(engine.allBodies[0].angle);
+    bullet.velocity = Vec2(0, 0).vectorFromAngle(
+      bulletSpeed,
+      engine.allBodies[0].angle
+    );
     engine.add(bullet);
     render.addSprite(bullet);
   }
@@ -142,10 +147,6 @@ engine.events.addCollisionEvent(testCollideEvent);
 engine.events.addCustomEvent(playerControlsEvent);
 engine.events.addCustomEvent(wrapObjects);
 
-function calculateShipDirection(angle) {
-  return Vec2(maxSpeed * Math.cos(angle), maxSpeed * Math.sin(angle));
-}
-
 function clampVector(x, y, min, max) {
   var clampedX = Math.max(min, Math.min(x, max));
   var clampedY = Math.max(min, Math.min(y, max));
@@ -162,7 +163,7 @@ function testCollideEvent() {
     engine.collisionResponse.bodyA.name === "player" ||
     engine.collisionResponse.bodyB.name === "player"
   ) {
-    //console.log("Game Over");
+    console.log("Game Over");
   }
 
   if (

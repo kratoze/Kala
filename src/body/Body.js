@@ -40,8 +40,15 @@ function Body(x, y, mass, friction, restitution, options) {
     } else {
       this.isSensor = false;
     }
-    if (options.name) {
+    if (options.name && typeof options.name === "string") {
       this.name = options.name;
+    } else {
+      this.name = "unnamed";
+    }
+    if (options.dampen && typeof options.dampen === "boolean") {
+      this.dampen = options.dampen;
+    } else {
+      this.dampen = false;
     }
   }
 }
@@ -52,11 +59,14 @@ Body.prototype.update = function(engine) {
     // v += a*t
     // s += v*t
     this.velocity = this.velocity.add(this.acceleration.scale(dt));
-
+    if (this.dampen) {
+      this.velocity = this.velocity.scale(0.985);
+    }
     this.move(this.velocity.scale(dt));
     //position += timestep * (velocity + timestep * acceleration / 2);
 
     this.angularVelocity += this.angularAcceleration * dt;
+    this.angularVelocity = this.angularVelocity * 0.985;
     this.rotate(this.angularVelocity * dt);
   }
 };

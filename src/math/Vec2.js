@@ -54,6 +54,10 @@ Vec2.prototype.distance = function(vec) {
   return Math.sqrt(x * x + y * y);
 };
 
+Vec2.prototype.vectorFromAngle = function(length, angle) {
+  return Vec2(length * Math.cos(angle), length * Math.sin(angle));
+};
+
 Vec2.init = function(x, y) {
   var self = this;
   self.x = x;

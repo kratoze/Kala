@@ -1,4 +1,4 @@
-function PixiRender() {
+function PixiRender(theme) {
   var self = this;
   //Set up PIXI
   this.app = new PIXI.Application({
@@ -8,29 +8,63 @@ function PixiRender() {
     forceCanvas: true,
     antialias: true
   });
+
   document.body.appendChild(this.app.view);
-  this.app.stop();
   this.app.stage.scale.x = this.app.stage.scale.y = 20;
 
   this.allRenderBodies = [];
   this.loader = PIXI.Loader.shared;
-
-  var sprites = {};
-
-  //Load spritesheet
   this.isLoaded = false;
+  var theme = theme || "stone";
+  var sprites = {};
+  var rectPNG;
+  var circlePNG;
+  switch (theme) {
+    case "space":
+      rectPNG = "imgs/enemyBlue3.png";
+      this.loader.add("sheet", "imgs/enemyBlue3.png").load(onAssetsLoaded);
+      break;
+    case "stone":
+      rectPNG = "elementMetal011.png";
+      this.loader
+        .add("sheet", "imgs/spritesheet_metal.json")
+        .load(onAssetsLoaded);
 
-  this.loader.add("sheet", "imgs/spritesheet_metal.json").load(onAssetsLoaded);
+      break;
+    case "pool":
+      this.loader
+        .add("wood", "imgs/PoolGameImgs/woodTexture.jpg")
+        .add("whiteball", "imgs/PoolGameImgs/whiteball.png")
+        .add("poolballs", "imgs/PoolGameImgs/redball.png")
+        .add("pot", "imgs/PoolGameImgs/pot.png")
+        .load(onAssetsLoaded);
+      break;
+    default:
+      break;
+  }
+
+  function onAssetsLoaded() {
+    switch (theme) {
+      case "stone":
+        sprites.rectTexture =
+          self.loader.resources["sheet"].textures["elementMetal011.png"];
+        break;
+      case "space":
+        sprites.rectTexture = self.loader.resources["sheet"].texture;
+
+        break;
+      case "pool":
+        sprites.rectTexture = self.loader.resources["wood"].texture;
+
+        break;
+      default:
+        break;
+    }
+  }
   this.loader.onComplete.add(() => {
-    this.app.start();
     this.isLoaded = true;
   });
 
-  function onAssetsLoaded() {
-    sprites.rectTexture =
-      self.loader.resources["sheet"].textures["elementMetal011.png"];
-    console.log("loaded");
-  }
   this.addRect = function(rect) {
     var r1 = this.graphics.drawRect(0, 0, rect.width, rect.height);
 
