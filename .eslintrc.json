@@ -13,7 +13,9 @@
     "Engine": "writable",
     "Circle": "writable",
     "Rectangle": "writable",
-    "Physics": "writable"
+    "Physics": "writable",
+    "Constraint": "writable",
+    "Common": "writable"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

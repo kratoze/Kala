@@ -1,4 +1,8 @@
+var bodyIndex = new Indexer();
+
 function Body(x, y, mass, friction, restitution, options) {
+  this.renderIndex;
+  this.bodyIndex = bodyIndex.incrementIndex();
   this.center = Vec2(x, y);
   this.inertia = 0;
   if (mass !== undefined) {
@@ -21,10 +25,9 @@ function Body(x, y, mass, friction, restitution, options) {
   this.velocity = Vec2(0, 0);
   if (this.invMass !== 0) {
     this.invMass = 1 / this.invMass;
-    this.acceleration = Engine.gravity;
-  } else {
-    this.acceleration = new Vec2(0, 0);
+    //this.acceleration = Engine.gravity;
   }
+  this.acceleration = Vec2(0, 0);
 
   // angle
   this.angle = 0;
@@ -34,6 +37,7 @@ function Body(x, y, mass, friction, restitution, options) {
   this.angularAcceleration = 0;
   this.boundRadius = 0;
   this.isSensor = false;
+  this.dampenValue = 0.985;
   if (options) {
     if (options.isSensor != undefined) {
       this.isSensor = options.isSensor;
@@ -50,6 +54,14 @@ function Body(x, y, mass, friction, restitution, options) {
     } else {
       this.dampen = false;
     }
+    if (options.dampenValue) {
+      this.dampenValue = options.dampenValue;
+    }
+    if (options.bodyPositionalCorrection) {
+      this.bodyPositionalCorrection = options.bodyPositionalCorrection;
+    } else {
+      this.bodyPositionalCorrection = true;
+    }
   }
 }
 
@@ -60,13 +72,13 @@ Body.prototype.update = function(engine) {
     // s += v*t
     this.velocity = this.velocity.add(this.acceleration.scale(dt));
     if (this.dampen) {
-      this.velocity = this.velocity.scale(0.985);
+      this.velocity = this.velocity.scale(this.dampenValue);
+      this.angularVelocity = this.angularVelocity * this.dampenValue;
     }
     this.move(this.velocity.scale(dt));
     //position += timestep * (velocity + timestep * acceleration / 2);
 
     this.angularVelocity += this.angularAcceleration * dt;
-    this.angularVelocity = this.angularVelocity * 0.985;
     this.rotate(this.angularVelocity * dt);
   }
 };
@@ -98,7 +110,6 @@ Body.prototype.updateMass = function(delta) {
     this.angularAcceleration = 0;
   } else {
     this.invMass = 1 / mass;
-    this.acceleration = Kala.Engine.gravity;
   }
   this.updateInertia();
 };

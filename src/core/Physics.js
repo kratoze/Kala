@@ -1,19 +1,10 @@
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
-
 function Physics() {
   var positionalCorrectionFlag = true;
   // number of relaxtion iterations
   var relaxationCount = 15;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
-  var drawCollisionInfo = function(collisionInfo, context) {
-    context.beginPath();
-    context.moveTo(collisionInfo.start.x, collisionInfo.start.y);
-    context.lineTo(collisionInfo.end.x, collisionInfo.end.y);
-    context.closePath();
-    context.strokeStyle = "orange";
-    context.stroke();
-  };
 
   var collision = function(engine) {
     var i, j, k;
@@ -40,21 +31,15 @@ function Physics() {
               ) {
                 collisionInfo.changeDir();
               }
-              //draw the normal
-              //drawCollisionInfo(collisionInfo, gEngine.Core.mContext);
               if (
                 engine.allBodies[i].isSensor === true ||
                 engine.allBodies[j].isSensor === true
               ) {
-                collisionResponse = {
-                  bodyA: engine.allBodies[i],
-                  bodyB: engine.allBodies[j],
-                  bodyAIndex: i,
-                  bodyBIndex: j,
-                  collisionInfo: collisionInfo,
-                  hasCollided: true
-                };
-                return collisionResponse;
+                collisionInfo.bodyA = engine.allBodies[i];
+                collisionInfo.bodyAIndex = i;
+                collisionInfo.bodyB = engine.allBodies[j];
+                collisionInfo.bodyBIndex = j;
+                return collisionInfo;
               } else {
                 resolveCollision(
                   engine.allBodies[i],
@@ -73,12 +58,13 @@ function Physics() {
     var i;
     var collisionInfo = new CollisionInfo();
     for (i = 0; i < engine.allConstraints.length; i++) {
-      if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
+      if (engine.allConstraints[i].maintainConstraint(engine, collisionInfo)) {
         resolveCollision(
           engine.allConstraints[i].bodyA,
           engine.allConstraints[i].bodyB,
           collisionInfo
         );
+        //engine.allConstraints[i].updateLink();
       }
     }
   };

@@ -1,4 +1,8 @@
 function CollisionInfo() {
+  this.bodyA;
+  this.bodyB;
+  this.bodyAIndex;
+  this.bodyBIndex;
   this.depth = 0;
   this.normal = new Vec2(0, 0);
   this.start = new Vec2(0, 0);

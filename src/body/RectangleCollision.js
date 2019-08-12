@@ -16,10 +16,8 @@ var SupportStruct = function() {
 var tmpSupport = new SupportStruct();
 
 Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
-  //the longest project length
   var vToEdge;
   var projection;
-  //initialise the computed results
   tmpSupport.supportPointDist = -9999999;
   tmpSupport.supportPoint = null;
   //check each vector of other object
@@ -54,7 +52,7 @@ Rectangle.prototype.findAxisLeastPenetration = function(
     // the vertex on edge i as point on edge
     var dir = n.scale(-1);
     var ptOnEdge = this.vertex[i];
-    // find the suuport on B
+    // find the support on B
     // the point has longest distance with edge i
     otherRect.findSupportPoint(dir, ptOnEdge);
     hasSupport = tmpSupport.supportPoint !== null;

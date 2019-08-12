@@ -15,7 +15,7 @@ Vec2.prototype.subtract = function(vec) {
 };
 
 Vec2.prototype.scale = function(n) {
-  return new Vec2(this.x * n, this.y * n);
+  return Vec2(this.x * n, this.y * n);
 };
 
 Vec2.prototype.dot = function(vec) {
@@ -56,6 +56,10 @@ Vec2.prototype.distance = function(vec) {
 
 Vec2.prototype.vectorFromAngle = function(length, angle) {
   return Vec2(length * Math.cos(angle), length * Math.sin(angle));
+};
+
+Vec2.prototype.angleFromVector = function(vec) {
+  return Math.atan2(this.y - vec.y, this.x - vec.x);
 };
 
 Vec2.init = function(x, y) {

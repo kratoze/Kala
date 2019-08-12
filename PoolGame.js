@@ -1,6 +1,6 @@
 var engine = new Kala.Engine();
-var render = new Kala.Render("pool");
-Kala.Engine.gravity = Vec2(0, 0);
+var render = new Kala.Render(1000, 1000, "pool", 20);
+engine.gravity = Vec2(0, 0);
 engine.movement = true;
 var isBallClicked = false;
 var relMousePosDown = Vec2(0, 0);
@@ -9,6 +9,10 @@ var relMousePosMove = Vec2(0, 0);
 var scale = render.app.stage.scale.x;
 var width = render.app.view.width / scale;
 var height = render.app.view.height / scale;
+
+var container = new PIXI.Container();
+var line = new PIXI.Graphics();
+
 var table = [
   new Kala.Rectangle(width / 2, 0 - 5, width, 12, 0, 1, 1),
   new Kala.Rectangle(width, height / 2, 12, height + 10, 0, 1, 1),
@@ -45,7 +49,7 @@ var whiteBall = new Kala.Circle(width / 2, 5, 1, 1, 0.2, 0.9, {
   name: "whiteball",
   dampen: true
 });
-//whiteBall.velocity = Vec2(0, 150);
+
 var eightBalls = [];
 var offSetY = 0;
 var offSetX = 0;
@@ -61,12 +65,14 @@ for (let row = 1; row < 6; row++) {
         1,
         0.9,
         0.2,
-        0.8,
+        0.9,
         { name: "8ball", dampen: true }
       )
     );
   }
 }
+
+//Add bodies to engine and render arrays once assets are loaded
 render.loader.onComplete.add(() => {
   engine.add(table);
   engine.add(pockets);
@@ -80,12 +86,15 @@ render.loader.onComplete.add(() => {
   render.addSprites(eightBalls);
   engine.initializeEngineCore(render);
   render.app.renderer.backgroundColor = "0x9c0d03";
-  render.allRenderBodies[10].texture =
+  render.bodyContainer.children[10].texture =
     render.loader.resources["whiteball"].texture;
 
   for (let i = 4; i < 10; i++) {
-    render.allRenderBodies[i].texture = render.loader.resources["pot"].texture;
+    render.bodyContainer.children[i].texture =
+      render.loader.resources["pot"].texture;
   }
+  //container.addChild();
+  render.app.stage.addChild(line);
 });
 var canvas = document.getElementsByTagName("canvas")[0];
 
@@ -101,7 +110,7 @@ canvas.addEventListener("mousedown", function(e) {
   }
 });
 
-canvas.addEventListener("mouseup", function(e) {
+window.addEventListener("mouseup", function(e) {
   relMousePosUp = getRelMouseCoords(e);
   if (isBallClicked) {
     var angle = Math.atan2(
@@ -112,11 +121,12 @@ canvas.addEventListener("mouseup", function(e) {
       engine.allBodies[10].center.distance(relMousePosUp) * 10,
       angle
     );
+    line.clear();
     isBallClicked = false;
   }
 });
 
-canvas.addEventListener("mousemove", function(e) {
+window.addEventListener("mousemove", function(e) {
   relMousePosMove = getRelMouseCoords(e);
 });
 
@@ -126,35 +136,26 @@ function getRelMouseCoords(event) {
 
 function potBall() {
   if (
-    engine.collisionResponse.bodyA.name == "8ball" ||
-    engine.collisionResponse.bodyB.name == "8ball"
+    engine.collisionInfo.bodyA.name == "8ball" ||
+    engine.collisionInfo.bodyB.name == "8ball"
   ) {
-    if (engine.collisionResponse.bodyA.name === "8ball") {
-      engine.removeBody(engine.collisionResponse.bodyAIndex);
-      render.removeSprite(engine.collisionResponse.bodyAIndex);
+    if (engine.collisionInfo.bodyA.name === "8ball") {
+      engine.removeBody(engine.collisionInfo.bodyAIndex);
+      render.removeSprite(engine.collisionInfo.bodyAIndex);
     } else {
-      engine.removeBody(engine.collisionResponse.bodyBIndex);
-      render.removeSprite(engine.collisionResponse.bodyBIndex);
+      engine.removeBody(engine.collisionInfo.bodyBIndex);
+      render.removeSprite(engine.collisionInfo.bodyBIndex);
     }
   }
 }
 
 function drawCue(e) {
-  var container = new PIXI.Container();
-  var line = new PIXI.Graphics();
-
-  container.addChild(line);
-  render.app.stage.addChild(container);
-
-  line.lineStyle(1, 0x000000, 4);
-
   if (isBallClicked) {
-    // line.position.x = engine.allBodies[10].center.x;
-    // line.position.y = engine.allBodies[10].center.y;
+    line.clear();
+    line.lineStyle(0.1, 0x000000, 1);
 
     line.moveTo(engine.allBodies[10].center.x, engine.allBodies[10].center.y);
     line.lineTo(relMousePosMove.x, relMousePosMove.y);
-    line.clear();
   }
 }
 

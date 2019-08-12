@@ -1,19 +1,23 @@
-function PixiRender(theme) {
+//var renderIndex = new Indexer();
+
+function PixiRender(width, height, theme, scale) {
   var self = this;
   //Set up PIXI
+
   this.app = new PIXI.Application({
-    height: 1000,
-    width: 1000,
+    height: width,
+    width: height,
     backgroundColor: 0xfcfccf,
     forceCanvas: true,
     antialias: true
   });
 
-  document.body.appendChild(this.app.view);
-  this.app.stage.scale.x = this.app.stage.scale.y = 20;
+  this.scale = scale;
 
-  this.allRenderBodies = [];
-  this.loader = PIXI.Loader.shared;
+  document.body.appendChild(this.app.view);
+  this.app.stage.scale.x = this.app.stage.scale.y = scale;
+  this.bodyContainer = new PIXI.Container();
+  this.loader = new PIXI.Loader();
   this.isLoaded = false;
   var theme = theme || "stone";
   var sprites = {};
@@ -22,7 +26,11 @@ function PixiRender(theme) {
   switch (theme) {
     case "space":
       rectPNG = "imgs/enemyBlue3.png";
-      this.loader.add("sheet", "imgs/enemyBlue3.png").load(onAssetsLoaded);
+      this.loader
+        .add("ship", "imgs/AsteroidGame/enemyBlue3.png")
+        .add("asteroid1", "imgs/AsteroidGame/meteorBrown_big1.png")
+        .add("explosion", "imgs/AsteroidGame/ExplosionAnimation.json")
+        .load(onAssetsLoaded);
       break;
     case "stone":
       rectPNG = "elementMetal011.png";
@@ -44,14 +52,19 @@ function PixiRender(theme) {
   }
 
   function onAssetsLoaded() {
+    sprites.circleTexture = PIXI.Sprite.from("imgs/circle.png").texture;
     switch (theme) {
       case "stone":
         sprites.rectTexture =
           self.loader.resources["sheet"].textures["elementMetal011.png"];
         break;
       case "space":
-        sprites.rectTexture = self.loader.resources["sheet"].texture;
-
+        sprites.rectTexture = self.loader.resources["ship"].texture;
+        sprites.circleTexture = self.loader.resources["asteroid1"].texture;
+        // sprites.explosionSheet = self.loader.resources["explosion"].sprites;
+        // sprites.explosion = new PIXI.AnimatedSprite(
+        //   sprites.explosionSheet.animations["explosion"]
+        // );
         break;
       case "pool":
         sprites.rectTexture = self.loader.resources["wood"].texture;
@@ -61,6 +74,8 @@ function PixiRender(theme) {
         break;
     }
   }
+
+  this.app.stage.addChild(this.bodyContainer);
   this.loader.onComplete.add(() => {
     this.isLoaded = true;
   });
@@ -74,12 +89,12 @@ function PixiRender(theme) {
     var centerPoint = this.graphics.drawRect(r1.width / 2, r1.height / 2, 1, 1);
     this.allRenderBodies.push(r1);
     this.app.stage.addChild(r1);
+    //rect.renderIndex = this.app.stage.getChildIndex(r1);
     this.app.stage.addChild(centerPoint);
   };
 
   this.addSprite = function(body) {
     if (body.type === "Rectangle") {
-      console.log("sprite rect");
       var r = new PIXI.Sprite(sprites.rectTexture);
       r.anchor.x = r.anchor.y = 0.5;
       r.position.x = body.center.x;
@@ -87,55 +102,61 @@ function PixiRender(theme) {
       r.width = body.width;
       r.height = body.height;
 
-      this.allRenderBodies.push(r);
-      this.app.stage.addChild(
-        this.allRenderBodies[this.allRenderBodies.length - 1]
-      );
+      this.bodyContainer.addChild(r);
+      //body.renderIndex = this.app.stage.getChildIndex(r);
     }
     if (body.type === "Circle") {
       //Add circle
-      var c = new PIXI.Sprite.from("imgs/circle.png");
+      var c = new PIXI.Sprite(sprites.circleTexture);
       c.anchor.x = c.anchor.y = 0.5;
       c.height = c.width = body.radius * 2;
       c.position.x = body.center.x;
       c.position.y = body.center.y;
-      this.allRenderBodies.push(c);
-      this.app.stage.addChild(
-        this.allRenderBodies[this.allRenderBodies.length - 1]
-      );
+      this.bodyContainer.addChild(c);
+      //body.renderIndex = this.app.stage.getChildIndex(c);
     }
   };
 
   this.addSprites = function(bodies) {
     if (Array.isArray(bodies)) {
       for (let i = 0; i < bodies.length; i++) {
-        this.addSprites(bodies[i]);
-        console.log("body added : Render");
+        this.addSprite(bodies[i]);
       }
     } else {
       this.addSprite(bodies);
     }
   };
 
-  this.removeSprite = function(spriteIndex) {
-    this.allRenderBodies.splice(spriteIndex, 1);
-    this.app.stage.removeChildAt(spriteIndex);
+  this.removeSprite = function(index) {
+    var tempSprite = this.bodyContainer.getChildAt(index);
+    if (tempSprite != undefined) {
+      this.bodyContainer.removeChild(tempSprite);
+    }
   };
 
   this.update = function(engine) {
     var engineBodies = engine.allBodies;
-    for (let i = 0; i < this.allRenderBodies.length; i++) {
+    for (let i = 0; i < this.bodyContainer.children.length; i++) {
       var engineBody = engineBodies[i];
-      var renderBody = this.allRenderBodies[i];
+      var renderBody = this.bodyContainer.children[i];
 
       var engineBodyPos = {
         x: engineBody.center.x,
         y: engineBody.center.y,
-        angle: engineBody.angle
+        angle: engineBody.angle,
+        width: engineBody.width,
+        height: engineBody.height,
+        radius: engineBody.radius * 2
       };
       renderBody.position.x = engineBodyPos.x;
       renderBody.position.y = engineBodyPos.y;
-      renderBody.rotation = engineBody.angle;
+      renderBody.rotation = engineBodyPos.angle;
+      renderBody.width = engineBody.radius
+        ? engineBodyPos.radius
+        : engineBodyPos.width;
+      renderBody.height = engineBodyPos.radius
+        ? engineBodyPos.radius
+        : engineBodyPos.height;
     }
   };
 }
