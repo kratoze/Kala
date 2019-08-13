@@ -1,3 +1,20 @@
+/**
+ * Rectangle - A rectangular Body
+ * @class
+ * @extends Body
+ * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
+ * @param  {number} y                 The Y coordinate of the center of the Body, converted to Vec2
+ * @param  {number} width             The width of the Rectangle
+ * @param  {number} height            The height of the Rectangle
+ * @param  {number} mass="1"          The Body's mass
+ * @param  {number} friction="0.8"    The friction coefficient, between 0 and 1 is best
+ * @param  {number} restitution="0.2" The restitution coefficient, or bounciness, between 0 and 1 is best
+ * @param  {object} [options]
+ * @param  {boolean} [options.isSensor="false"] If set to true the Body will not resolve collisions
+ * @param  {string} [options.name]    The name of the Body
+ * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
+ * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
+ */
 var Rectangle = function(
   x,
   y,
@@ -36,15 +53,12 @@ var Rectangle = function(
 };
 
 Common.extend(Rectangle, Body);
-
-// Rectangle.prototype.draw = function(context) {
-//   context.save();
-//   context.translate(this.vertex[0].x, this.vertex[0].y);
-//   context.rotate(this.angle);
-//   context.strokeRect(0, 0, this.width, this.height);
-//   context.restore();
-// };
-
+/**
+ * Moves the Rectangle. Use this to affect the Rectangle's positon instead of assigning to its center
+ *
+ * @param  {Vec2} vec The Vector that is added to the Circle
+ * @return {Rectangle}   Returns this Rectangle for method chaining
+ */
 Rectangle.prototype.move = function(v) {
   var i;
   for (i = 0; i < this.vertex.length; i++) {
@@ -53,7 +67,12 @@ Rectangle.prototype.move = function(v) {
   this.center = this.center.add(v);
   return this;
 };
-
+/**
+ * Rotates the Rectangle. Use this to affect the angle instead of assigning to its angle
+ *
+ * @param  {number} angle The angle the Circle will be rotated. + for counterclockwise - for clockwise
+ * @return {Rectangle}   Returns this Rectangle for method chaining
+ */
 Rectangle.prototype.rotate = function(angle) {
   this.angle += angle;
   var i;
@@ -70,7 +89,10 @@ Rectangle.prototype.rotate = function(angle) {
   this.faceNormal[3] = this.faceNormal[3].normalize();
   return this;
 };
-
+/**
+ * Updates the inertia based on the Circle's mass.
+ * Should only be run in the constructor or when updateMass is called
+ */
 Rectangle.prototype.updateInertia = function() {
   // Expect InvMass to already be inverted!
   if (this.invMass === 0) {

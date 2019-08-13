@@ -16,7 +16,6 @@ var playerLives = 3;
 var deathAnimation;
 var deathLoop = 0;
 var isDying = false;
-//render.loader.resources["explosion"].spritesheet.animations["explosion"]
 
 render.loader.onComplete.add(() => {
   engine.add(playerShip);
@@ -148,7 +147,6 @@ function collisionEvents() {
     (engine.collisionInfo.bodyA.name === "asteroid" ||
       engine.collisionInfo.bodyB.name === "asteroid")
   ) {
-    console.log("game over");
     isDying = true;
     playerDeath();
   } else if (
@@ -228,7 +226,12 @@ function newAsteroid() {
 }
 
 function playerDeath() {
-  playerLives--;
+  if (playerLives === 0) {
+    playerScore = 0;
+    playerLives = 3;
+  } else {
+    playerLives--;
+  }
   deathAnimation.position.x = engine.allBodies[0].center.x;
   deathAnimation.position.y = engine.allBodies[0].center.y;
   deathAnimation.renderable = true;
@@ -236,7 +239,6 @@ function playerDeath() {
   deathAnimation.play();
   deathAnimation.onLoop = function() {
     deathLoop++;
-    console.log(deathLoop);
 
     if (deathLoop >= 2) {
       deathAnimation.renderable = false;
@@ -254,8 +256,6 @@ function playerDeath() {
     }
   };
 }
-
-function playerRestart() {}
 
 document.addEventListener("keydown", function(e) {
   e.preventDefault();

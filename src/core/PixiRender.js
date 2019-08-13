@@ -17,6 +17,7 @@ function PixiRender(width, height, theme, scale) {
   document.body.appendChild(this.app.view);
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
   this.bodyContainer = new PIXI.Container();
+  var graphics = new PIXI.Graphics();
   this.loader = new PIXI.Loader();
   this.isLoaded = false;
   var theme = theme || "stone";
@@ -76,6 +77,8 @@ function PixiRender(width, height, theme, scale) {
   }
 
   this.app.stage.addChild(this.bodyContainer);
+  this.app.stage.addChild(graphics);
+
   this.loader.onComplete.add(() => {
     this.isLoaded = true;
   });
@@ -134,6 +137,13 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
+  this.drawLine = function(x1, y1, x2, y2) {
+    graphics.clear();
+    graphics.lineStyle(0.1, 0x000000, 1);
+
+    graphics.moveTo(x1, y1);
+    graphics.lineTo(x2, y2);
+  };
   this.update = function(engine) {
     var engineBodies = engine.allBodies;
     for (let i = 0; i < this.bodyContainer.children.length; i++) {
@@ -158,5 +168,14 @@ function PixiRender(width, height, theme, scale) {
         ? engineBodyPos.radius
         : engineBodyPos.height;
     }
+
+    engine.allConstraints.forEach(function(constraint) {
+      self.drawLine(
+        constraint.bodyA.center.x,
+        constraint.bodyA.center.y,
+        constraint.bodyB.center.x,
+        constraint.bodyB.center.y
+      );
+    });
   };
 }

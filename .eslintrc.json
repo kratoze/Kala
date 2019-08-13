@@ -15,7 +15,8 @@
     "Rectangle": "writable",
     "Physics": "writable",
     "Constraint": "writable",
-    "Common": "writable"
+    "Common": "writable",
+    "PIXI": "readonly"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

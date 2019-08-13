@@ -40,7 +40,6 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
     relDist + baumgarte * engine.updateIntervalInSeconds
   );
 
-  console.log(engine.updateIntervalInSeconds);
   this.previousRelDist = relDist;
   this.bodyA.velocity = this.bodyA.velocity.add(
     impulse.scale(this.bodyA.invMass * this.stiffness)
@@ -50,7 +49,7 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   );
 
   if (constraintNormal.y > 0) {
-    constraintNormal.y = -constraintNormal.y;
+    //constraintNormal.scale(-1);
   } else if (true) {
   }
 
@@ -58,11 +57,23 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
     Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyA.angle;
   var angularImpulseB =
     Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyB.angle;
+  // if (this.bodyA.angle < -Math.PI) {
+  //   //angularImpulseA = Math.PI;
+  //   //this.bodyA.rotate(Math.PI);
+  // } else if (this.bodyA.angle > Math.PI) {
+  //   //this.bodyA.rotate(-Math.PI);
+  //   Vec2().length()
+  // }
+
+  //angularImpulseA = this.bodyB.center.cross(impulse) / 10;
 
   this.bodyA.angularVelocity += angularImpulseA * this.bodyA.inertia;
   this.bodyB.angularVelocity -= angularImpulseB * this.bodyB.inertia;
-
-  console.log(angularImpulseA);
+  if (this.bodyA.angle < -Math.PI) {
+    //this.bodyA.rotate(Math.PI);
+  } else if (this.bodyA.angle > Math.PI) {
+    //this.bodyA.rotate(-Math.PI);
+  }
 };
 
 DistanceConstraint.prototype.initialiseConstraint = function() {

@@ -1,5 +1,19 @@
 var bodyIndex = new Indexer();
 
+/**
+ * Body   A Rigid Body, inherited by Rectangle and Circle
+ * @class
+ * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
+ * @param  {number} y                 The Y coordinate of the center of the Body, converted to Vec2
+ * @param  {number} mass="1"          The Body's mass
+ * @param  {number} friction="0.8"    The friction coefficient, between 0 and 1 is best
+ * @param  {number} restitution="0.2" The restitution coefficient, or bounciness, between 0 and 1 is best
+ * @param  {object} [options]
+ * @param  {boolean} [options.isSensor="false"] If set to true the Body will not resolve collisions
+ * @param  {string} [options.name]    The name of the Body
+ * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
+ * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
+ */
 function Body(x, y, mass, friction, restitution, options) {
   this.renderIndex;
   this.bodyIndex = bodyIndex.incrementIndex();
@@ -25,7 +39,6 @@ function Body(x, y, mass, friction, restitution, options) {
   this.velocity = Vec2(0, 0);
   if (this.invMass !== 0) {
     this.invMass = 1 / this.invMass;
-    //this.acceleration = Engine.gravity;
   }
   this.acceleration = Vec2(0, 0);
 
@@ -65,6 +78,10 @@ function Body(x, y, mass, friction, restitution, options) {
   }
 }
 
+/**
+ * Updates the position and angle of the Body
+ * @param {Engine} engine engine the Body is contained within
+ */
 Body.prototype.update = function(engine) {
   if (engine.movement) {
     var dt = engine.updateIntervalInSeconds;
@@ -83,6 +100,11 @@ Body.prototype.update = function(engine) {
   }
 };
 
+/**
+ * Checks if another Body is within this Body's bounding radius as the first step of the Broad-Phase
+ * @param  {Body} otherShape description
+ * @return {boolean}         Returns true if another Body is within the Body's bound radius
+ */
 Body.prototype.boundTest = function(otherShape) {
   var vFrom1to2 = otherShape.center.subtract(this.center);
   var rSum = this.boundRadius + otherShape.boundRadius;
@@ -93,6 +115,10 @@ Body.prototype.boundTest = function(otherShape) {
   return true;
 };
 
+/**
+ * Updates the mass of the Body and updates its inertia
+ * @param  {number} delta The amount added to the Body's mass
+ */
 Body.prototype.updateMass = function(delta) {
   var mass;
   if (this.invMass !== 0) {
@@ -114,10 +140,19 @@ Body.prototype.updateMass = function(delta) {
   this.updateInertia();
 };
 
+/**
+ * Adds to the Body's acceleration
+ * Shorthand for Body.acceleration = Body.acceleration.add(vec)
+ * @param  {Vec2} vec The Vector that is added the the Body's acceleration
+ */
 Body.prototype.addAcceleration = function(vec) {
   this.acceleration = this.acceleration.add(vec);
 };
-
+/**
+ * Subtracts from the Body's acceleration
+ * Shorthand for Body.acceleration = Body.acceleration.subtract(vec)
+ * @param  {Vec2} vec The Vector that is added the the Body's acceleration
+ */
 Body.prototype.subtractAcceleration = function(vec) {
   this.acceleration = this.acceleration.subtract(vec);
 };

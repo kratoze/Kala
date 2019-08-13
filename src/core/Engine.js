@@ -1,3 +1,7 @@
+/**
+ * Engine - The core engine where all Bodies and Constraints are managed. Contains the main engine loop.
+ * @class
+ */
 function Engine() {
   var self = this;
   this.movement = false;
@@ -21,6 +25,10 @@ function Engine() {
 
   var bodyIndex = new Indexer();
 
+  /**
+   * Adds a Body or array of Bodies to the engine's array of Bodies
+   * @param  {Body[]} bodies The Body or array of Bodies to be added to the engine
+   */
   this.add = function(bodies) {
     if (Array.isArray(bodies)) {
       bodies.forEach(function(body) {
@@ -38,6 +46,10 @@ function Engine() {
     }
   };
 
+  /**
+   * Removes a Body from the engines Body array by its index
+   * @param  {number} bodyIndex The index of the Body to be removed
+   */
   this.removeBody = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
   };
@@ -53,6 +65,10 @@ function Engine() {
     }
   };
 
+  /**
+   * Applies the engine's gravity to a body
+   * @param  {Body} body The Body gravity is applied to
+   */
   this.applyGravity = function(body) {
     if (body.invMass !== 0) {
       body.acceleration = this.gravity;
@@ -61,12 +77,19 @@ function Engine() {
     }
   };
 
+  /**
+   * Calls the update method on all the Bodies stored in the engine's array of Bodies
+   */
   this.update = function() {
     for (var i = 0; i < this.allBodies.length; i++) {
       this.allBodies[i].update(this);
     }
   };
 
+  /**
+   * The central loop where collisions, contraints and events are resolves and updated
+   * @param  {PixiRender} [render] Optional renderer to be updated with the loop
+   */
   this.runGameLoop = function(render) {
     requestAnimationFrame(function() {
       self.runGameLoop(render);
@@ -100,6 +123,10 @@ function Engine() {
     }
   };
 
+  /**
+   * Initialises the engine loop by calling runGameLoop
+   * @param  {PixiRender} [render] Optional renderer to be updated with the loop
+   */
   this.initializeEngineCore = function(render) {
     self.runGameLoop(render);
   };
