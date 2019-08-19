@@ -1,0 +1,26 @@
+@startuml
+
+left to right direction
+skinparam packageStyle rectangle
+
+skinparam monochrome true
+skinparam shadowing false
+
+actor :Developer: as d
+
+d---(Create Rectangle)
+
+
+d---(Create Circle)
+
+
+rectangle Engine {
+
+  d--(Add Rectangle)
+  d--(Add Circle)
+  (Add Rectangle)..>(Create Rectangle) : include
+  (Add Circle)..>(Create Circle) : include
+
+}
+
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+
+left to right direction
+skinparam monochrome true
+skinparam shadowing false
+
+actor :Developer: as d
+actor :Engine: as e
+actor :Physics: as Physics
+
+d--(Create Rectangle)
+d--(Add Rectangle)
+(Add Rectangle)--e
+(Add Rectangle).>(Create Rectangle) : include
+e--(Detect Collision)
+(Detect Collision)--Physics
+@enduml

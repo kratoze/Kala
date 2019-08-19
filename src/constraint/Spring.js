@@ -1,7 +1,5 @@
 function Spring(bodyA, bodyB, length, stiffness, options) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
-  this.restingAngleA = this.bodyA.angle;
-  this.restingAngleB = this.bodyB.angle;
   this.centerA = this.bodyA.center;
   this.dampingConstant = 0.0025;
   if (options) {

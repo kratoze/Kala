@@ -15,7 +15,6 @@ var bodyIndex = new Indexer();
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
 function Body(x, y, mass, friction, restitution, options) {
-  this.renderIndex;
   this.bodyIndex = bodyIndex.incrementIndex();
   this.center = Vec2(x, y);
   this.inertia = 0;
@@ -117,9 +116,9 @@ Body.prototype.boundTest = function(otherShape) {
 
 /**
  * Updates the mass of the Body and updates its inertia
- * @param  {number} delta The amount added to the Body's mass
+ * @param  {number} mass The amount added to the Body's mass
  */
-Body.prototype.updateMass = function(delta) {
+Body.prototype.updateMass = function(massToAdd) {
   var mass;
   if (this.invMass !== 0) {
     mass = 1 / this.invMass;
@@ -127,7 +126,7 @@ Body.prototype.updateMass = function(delta) {
     mass = 0;
   }
 
-  mass += delta;
+  mass += massToAdd;
   if (mass <= 0) {
     this.invMass = 0;
     this.velocity = Vec2(0, 0);

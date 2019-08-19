@@ -23,8 +23,6 @@ function Engine() {
 
   this.gravity = Vec2(0, 10);
 
-  var bodyIndex = new Indexer();
-
   /**
    * Adds a Body or array of Bodies to the engine's array of Bodies
    * @param  {Body[]} bodies The Body or array of Bodies to be added to the engine
@@ -33,7 +31,6 @@ function Engine() {
     if (Array.isArray(bodies)) {
       bodies.forEach(function(body) {
         if (body instanceof Body) {
-          //self.applyGravity(body);
           self.allBodies.push(body);
           self.applyGravity(self.allBodies[self.allBodies.length - 1]);
         }
@@ -56,7 +53,10 @@ function Engine() {
 
   this.addConstraint = function(constraint) {
     this.allConstraints.push(constraint);
-    //this.allBodies.push(constraint.constraintLink);
+  };
+
+  this.removeConstraint = function(bodyIndex) {
+    this.allConstraints.splice(bodyIndex, 1);
   };
 
   this.applyGravityAllBodies = function() {

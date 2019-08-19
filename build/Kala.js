@@ -167,8 +167,6 @@ function Engine() {
 
   this.gravity = Vec2(0, 10);
 
-  var bodyIndex = new Indexer();
-
   /**
    * Adds a Body or array of Bodies to the engine's array of Bodies
    * @param  {Body[]} bodies The Body or array of Bodies to be added to the engine
@@ -294,8 +292,10 @@ function PixiRender(width, height, theme, scale) {
 
   document.body.appendChild(this.app.view);
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
-  this.bodyContainer = new PIXI.Container();
+
   var graphics = new PIXI.Graphics();
+  this.bodyContainer = new PIXI.Container();
+  this.constraintContainer = new PIXI.Container();
   this.loader = new PIXI.Loader();
   this.isLoaded = false;
   var theme = theme || "stone";
@@ -355,24 +355,13 @@ function PixiRender(width, height, theme, scale) {
   }
 
   this.app.stage.addChild(this.bodyContainer);
-  this.app.stage.addChild(graphics);
+  this.app.stage.addChild(this.constraintContainer);
+
+  //this.app.stage.addChild(graphics);
 
   this.loader.onComplete.add(() => {
     this.isLoaded = true;
   });
-
-  this.addRect = function(rect) {
-    var r1 = this.graphics.drawRect(0, 0, rect.width, rect.height);
-
-    r1.pivot.set(r1.width / 2, r1.height / 2);
-    r1.position.x = rect.center.x;
-    r1.position.y = rect.center.y;
-    var centerPoint = this.graphics.drawRect(r1.width / 2, r1.height / 2, 1, 1);
-    this.allRenderBodies.push(r1);
-    this.app.stage.addChild(r1);
-    //rect.renderIndex = this.app.stage.getChildIndex(r1);
-    this.app.stage.addChild(centerPoint);
-  };
 
   this.addSprite = function(body) {
     if (body.type === "Rectangle") {
@@ -418,7 +407,6 @@ function PixiRender(width, height, theme, scale) {
   this.drawLine = function(x1, y1, x2, y2) {
     graphics.clear();
     graphics.lineStyle(0.1, 0x000000, 1);
-
     graphics.moveTo(x1, y1);
     graphics.lineTo(x2, y2);
   };
@@ -454,6 +442,7 @@ function PixiRender(width, height, theme, scale) {
         constraint.bodyB.center.x,
         constraint.bodyB.center.y
       );
+      self.constraintContainer.addChild(graphics);
     });
   };
 }
@@ -689,7 +678,6 @@ var bodyIndex = new Indexer();
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
 function Body(x, y, mass, friction, restitution, options) {
-  this.renderIndex;
   this.bodyIndex = bodyIndex.incrementIndex();
   this.center = Vec2(x, y);
   this.inertia = 0;
@@ -791,9 +779,9 @@ Body.prototype.boundTest = function(otherShape) {
 
 /**
  * Updates the mass of the Body and updates its inertia
- * @param  {number} delta The amount added to the Body's mass
+ * @param  {number} mass The amount added to the Body's mass
  */
-Body.prototype.updateMass = function(delta) {
+Body.prototype.updateMass = function(massToAdd) {
   var mass;
   if (this.invMass !== 0) {
     mass = 1 / this.invMass;
@@ -801,7 +789,7 @@ Body.prototype.updateMass = function(delta) {
     mass = 0;
   }
 
-  mass += delta;
+  mass += massToAdd;
   if (mass <= 0) {
     this.invMass = 0;
     this.velocity = Vec2(0, 0);
@@ -1326,9 +1314,13 @@ Constraint.prototype.maintainConstraint = function() {};
 
 Constraint.prototype.updateLink = function() {};
 
+Constraint.prototype.initialiseConstraint = function() {};
+
 function DistanceConstraint(bodyA, bodyB, length, stiffness) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
   this.minLength = 0.005;
+  this.restingAngleA = this.bodyA.angle;
+  this.restingAngleB = this.bodyB.angle;
   this.previousRelDist =
     this.bodyB.center.subtract(this.bodyA.center).length() - this.length;
 
@@ -1376,32 +1368,15 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
     impulse.scale(this.bodyB.invMass * this.stiffness)
   );
 
-  if (constraintNormal.y > 0) {
-    //constraintNormal.scale(-1);
-  } else if (true) {
-  }
-
   var angularImpulseA =
-    Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyA.angle;
+    Vec2(0, 0).angleFromVector(constraintNormal) +
+    this.restingAngleA -
+    this.bodyA.angle * 0.985;
   var angularImpulseB =
     Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyB.angle;
-  // if (this.bodyA.angle < -Math.PI) {
-  //   //angularImpulseA = Math.PI;
-  //   //this.bodyA.rotate(Math.PI);
-  // } else if (this.bodyA.angle > Math.PI) {
-  //   //this.bodyA.rotate(-Math.PI);
-  //   Vec2().length()
-  // }
-
-  //angularImpulseA = this.bodyB.center.cross(impulse) / 10;
 
   this.bodyA.angularVelocity += angularImpulseA * this.bodyA.inertia;
   this.bodyB.angularVelocity -= angularImpulseB * this.bodyB.inertia;
-  if (this.bodyA.angle < -Math.PI) {
-    //this.bodyA.rotate(Math.PI);
-  } else if (this.bodyA.angle > Math.PI) {
-    //this.bodyA.rotate(-Math.PI);
-  }
 };
 
 DistanceConstraint.prototype.initialiseConstraint = function() {

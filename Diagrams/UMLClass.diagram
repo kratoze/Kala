@@ -1,0 +1,193 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class Body {
+  +bodyIndex : number
+  +center : Vec2
+  +inertia : Number
+  +invMass : Number
+  +friction : Number
+  +restitution : Number
+  +velocity : Vec2
+  +acceleration : Vec2
+  +angle : Number
+  +angularVelocity : Number
+  +angularAcceleration : Number
+  +boundRadius : Number
+  +isSensor : Boolean
+  +dampen : Boolean
+  +dampenValue : Number
+  +bodyPositionalCorrection : Boolean
+
+  +update()
+  +boundTest()
+  +updateMass(Number)
+  +addAcceleration(Vec2)
+  +subtractAcceleration(Vec2)
+  +updateInertia()
+  +collisionTest(Body, CollisionInfo)
+}
+
+class Rectangle {
+  +type : String
+  +width : Number
+  +height : Number
+  +vertex : Vec2[0..4]
+  +faceNormal : Vec2[0..4]
+
+  +move(Vec2)
+  +rotate(Number)
+  +findSupportPoint(Vec2, Vec2)
+  +findAxisLeastPenetration(Rectangle, CollisionInfo)
+  +collidedRectRect(Rectangle, Rectangle, CollisionInfo)
+  +collidedRectCirc(Cirlce, CollisionInfo)
+}
+
+class Circle {
+  +type : String
+  +radius : Number
+  +boundRadius : Number
+  +startPoint : Vec2
+
+  +move(Vec2)
+  +rotate(Number)
+  +collidedCircCirc(Circle, Circle, CollisionInfo)
+}
+
+class Engine {
+  +movement : Boolean
+  +currentTime = DOMHighResTimeStamp
+  +elapsedTime = Number
+  +lagTime : Number
+  +kFPS : Number
+  +frameTime : Number
+  +updateIntervalInSeconds : Number
+  +kMPF : Number
+  +allBodies : Body[0..*]
+  +allConstraints : Constraint[0..*]
+  +physics : Physics
+  +events : Events
+  +collisionResponse : CollisionInfo
+  +gravity : Vec2
+
+  +add(Body[1..*])
+  +removeBody(Number)
+  +addConstraint(Constraint)
+  +removeConstraint(Number)
+  +applyGravity()
+  +applyGravityAllBodies()
+  +update()
+  +runGameLoop(Renderer)
+  +initializeEngineCore(Renderer)
+}
+
+class Vec2 {
+  +x : Number
+  +y : Number
+
+  +init() : Vec2
+  +length() : Vec2
+  +subtract(Vec2) : Vec2
+  +scale(Number) : Vec2
+  +dot(Vec2) : Number
+  +cross(Vec2) : Number
+  +rotate(Vec2, Number) : Vec2
+  +normalize() : : Vec2
+  +distance(Vec2) : Number
+  +vectorFromAngle(Number, Number) : Vec2
+  +angleFromVector(Vec2) : Number
+}
+
+class Physics {
+  -positionalCorrectionFlag : Boolean
+  -relaxationCount : Number
+  -posCorrectionRate : Number
+
+  -collision(Engine)
+  -maintainConstraints(Engine)
+  -positionalCorrection(Body, Body, CollisionInfo)
+  -resolveCollision(Body, Body, CollisionInfo)
+}
+
+class PixiRender {
+  +app : Application
+  +scale : Number
+  +bodyContainer : Container
+  +constraintContainer : Container
+  +loader : Loader
+  +isLoaded : Boolean
+  -graphics : Graphics
+  -theme : String
+  -sprites : Object
+  -rectPNG : String
+  -circlePNG : String
+
+  +addSprite(Body)
+  +addSprites(Body[1..*])
+  +removeSprite(Number)
+  +drawLine(Number,Number,Number,Number)
+  +update(Engine)
+}
+
+class Events {
+  +customEvents : Object
+  +collisionEvents : Object
+
+  +addCustomEvent(Function)
+  +addCollisionEvent(Function)
+}
+
+class Constraint {
+  +index : Number
+  +bodyA : Body
+  +bodyB : Body
+  +restingAngleA
+  +restingAngleB
+  +length : Number
+  +stiffness : Number
+
+  +maintainConstraints()
+  +initialiseConstraint()
+  +updateLink()
+}
+
+class DistanceConstraint {
+
+}
+
+class Spring {
+
+}
+
+class Factory {
+  +createSquareGrid() : Rectangle[]
+  +createCircleGrid() : Circle[]
+}
+
+package Pixi.js <<External>> <<library>>{
+  class Application {
+
+  }
+  class Graphics {
+
+  }
+}
+
+Circle --|> Body
+Rectangle --|> Body
+DistanceConstraint --|> Constraint
+Spring --|> Constraint
+Engine..> Physics : uses
+Engine...> PixiRender : uses
+Engine"0..*"--- Rectangle
+Engine"0..*"--- Circle
+Engine"0..*"-- DistanceConstraint
+Engine"0..*"-- Spring
+Engine"0..*"- Events
+PixiRender..>Pixi.js
+Factory.>Rectangle
+Factory.>Circle
+
+@enduml

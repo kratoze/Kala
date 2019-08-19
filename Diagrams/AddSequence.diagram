@@ -1,0 +1,29 @@
+@startuml
+
+skinparam monochrome true
+skinparam shadowing false
+
+actor Developer as d
+participant ":Rectangle" as r
+
+participant ":Engine" as e
+participant ":Physics" as p
+
+
+d -> e ++ : create
+d -> r ++ : create
+r->r : super() updateInertia()
+
+ref over r : Body
+r->e -- : add()
+d-> e: initializeEngineCore()
+loop
+  e->p ++ : collision()
+  p->r ++ : collisionTest()
+    loop
+
+  p-->e : collisionInfo
+
+end
+
+@enduml

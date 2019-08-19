@@ -2,7 +2,7 @@
   "ecmaVersion": 8,
   "libs": ["browser"],
   "loadEagerly": ["src/**/*", "*"],
-  "dontLoad": ["node_modules/**"],
+  "dontLoad": ["node_modules/**", "build/Kala.min.js"],
   "plugins": {
     "doc_comment": true,
     "complete_strings": {

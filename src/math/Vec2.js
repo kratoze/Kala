@@ -59,7 +59,7 @@ Vec2.prototype.scale = function(n) {
  * Calculates the dot product of a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector
- * @return {Vec2}     The dot product of the two Vectors
+ * @return {Number}     The dot product of the two Vectors
  */
 Vec2.prototype.dot = function(vec) {
   return this.x * vec.x + this.y * vec.y;

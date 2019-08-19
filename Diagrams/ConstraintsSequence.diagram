@@ -1,0 +1,21 @@
+@startuml
+
+title Create and Add Constraint
+
+skinparam monochrome true
+skinparam shadowing false
+
+
+actor Developer as d
+participant ":Rectangle" as r
+
+participant ":Engine" as e
+
+participant ":Constraint" as c
+participant ":Physics" as p
+
+
+d -> e ** : create
+d -> r ** : create
+
+@enduml

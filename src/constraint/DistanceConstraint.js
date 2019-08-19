@@ -1,6 +1,8 @@
 function DistanceConstraint(bodyA, bodyB, length, stiffness) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
   this.minLength = 0.005;
+  this.restingAngleA = this.bodyA.angle;
+  this.restingAngleB = this.bodyB.angle;
   this.previousRelDist =
     this.bodyB.center.subtract(this.bodyA.center).length() - this.length;
 
@@ -48,32 +50,15 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
     impulse.scale(this.bodyB.invMass * this.stiffness)
   );
 
-  if (constraintNormal.y > 0) {
-    //constraintNormal.scale(-1);
-  } else if (true) {
-  }
-
   var angularImpulseA =
-    Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyA.angle;
+    Vec2(0, 0).angleFromVector(constraintNormal) +
+    this.restingAngleA -
+    this.bodyA.angle * 0.985;
   var angularImpulseB =
     Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyB.angle;
-  // if (this.bodyA.angle < -Math.PI) {
-  //   //angularImpulseA = Math.PI;
-  //   //this.bodyA.rotate(Math.PI);
-  // } else if (this.bodyA.angle > Math.PI) {
-  //   //this.bodyA.rotate(-Math.PI);
-  //   Vec2().length()
-  // }
-
-  //angularImpulseA = this.bodyB.center.cross(impulse) / 10;
 
   this.bodyA.angularVelocity += angularImpulseA * this.bodyA.inertia;
   this.bodyB.angularVelocity -= angularImpulseB * this.bodyB.inertia;
-  if (this.bodyA.angle < -Math.PI) {
-    //this.bodyA.rotate(Math.PI);
-  } else if (this.bodyA.angle > Math.PI) {
-    //this.bodyA.rotate(-Math.PI);
-  }
 };
 
 DistanceConstraint.prototype.initialiseConstraint = function() {

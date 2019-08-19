@@ -1,0 +1,16 @@
+@startuml
+
+left to right direction
+skinparam monochrome true
+skinparam shadowing false
+
+actor :Engine: as e
+
+e--(Add Rectangle)
+
+rectangle Physics {
+  e--(Detect Collision)
+}
+
+
+@enduml

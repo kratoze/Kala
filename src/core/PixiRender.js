@@ -2,8 +2,8 @@
 
 function PixiRender(width, height, theme, scale) {
   var self = this;
-  //Set up PIXI
 
+  //Set up PIXI Application
   this.app = new PIXI.Application({
     height: width,
     width: height,
@@ -16,8 +16,10 @@ function PixiRender(width, height, theme, scale) {
 
   document.body.appendChild(this.app.view);
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
-  this.bodyContainer = new PIXI.Container();
+
   var graphics = new PIXI.Graphics();
+  this.bodyContainer = new PIXI.Container();
+  this.constraintContainer = new PIXI.Container();
   this.loader = new PIXI.Loader();
   this.isLoaded = false;
   var theme = theme || "stone";
@@ -77,24 +79,11 @@ function PixiRender(width, height, theme, scale) {
   }
 
   this.app.stage.addChild(this.bodyContainer);
-  this.app.stage.addChild(graphics);
+  this.app.stage.addChild(this.constraintContainer);
 
   this.loader.onComplete.add(() => {
     this.isLoaded = true;
   });
-
-  this.addRect = function(rect) {
-    var r1 = this.graphics.drawRect(0, 0, rect.width, rect.height);
-
-    r1.pivot.set(r1.width / 2, r1.height / 2);
-    r1.position.x = rect.center.x;
-    r1.position.y = rect.center.y;
-    var centerPoint = this.graphics.drawRect(r1.width / 2, r1.height / 2, 1, 1);
-    this.allRenderBodies.push(r1);
-    this.app.stage.addChild(r1);
-    //rect.renderIndex = this.app.stage.getChildIndex(r1);
-    this.app.stage.addChild(centerPoint);
-  };
 
   this.addSprite = function(body) {
     if (body.type === "Rectangle") {
@@ -140,7 +129,6 @@ function PixiRender(width, height, theme, scale) {
   this.drawLine = function(x1, y1, x2, y2) {
     graphics.clear();
     graphics.lineStyle(0.1, 0x000000, 1);
-
     graphics.moveTo(x1, y1);
     graphics.lineTo(x2, y2);
   };
@@ -176,6 +164,7 @@ function PixiRender(width, height, theme, scale) {
         constraint.bodyB.center.x,
         constraint.bodyB.center.y
       );
+      self.constraintContainer.addChild(graphics);
     });
   };
 }

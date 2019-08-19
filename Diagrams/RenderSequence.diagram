@@ -1,0 +1,37 @@
+@startuml
+title Create and Add Event
+
+skinparam monochrome true
+skinparam shadowing false
+actor "Developer" as d
+participant ":Engine" as e
+participant ":Events" as ev
+
+d -> e ** : create
+e -> ev ** : create
+
+d -> ev ++ : addCustomEvent(Function)
+d -> ev  : addCollisionEvent(Function)
+deactivate ev
+d->e ++ : initializeEngineCore()
+
+loop each frame
+  ref over e : Physics
+
+  loop for each custom event
+    e->ev ++ :call()
+    opt if custom event returns
+      ev-->e --: custom return
+    end
+  end
+  loop for each collision event
+    e-->ev++ : CollisionInfo
+    e->ev:call()
+    ev-->e --: CollisionInfo
+  end
+  ref over e : Render
+
+end
+deactivate e
+
+@enduml

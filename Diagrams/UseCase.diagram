@@ -1,0 +1,30 @@
+@startuml
+
+left to right direction
+skinparam monochrome true
+skinparam shadowing false
+
+:Developer: as d
+:Engine: as e
+
+d-->(Initialise Engine)
+d-->(Initiate Engine)
+d-->(Create Circle)
+d-->(Create Rectangle)
+(Create Circle) ..> (Create Rigid Body) : extends
+(Create Rectangle) ..> (Create Rigid Body) : extends
+d-->(Add Circle)
+(Add Circle) .> (Create Circle) : include
+d-->(Add Rectangle)
+(Add Rectangle).> (Create Rectangle) : include
+d-->(Add Event)
+d-->(Initialise Renderer)
+d-->(Add Rigid Body to Renderer)
+(Add Rigid Body to Renderer) .> (Initialise Renderer) : include
+d-->(Create Distance Constraint)
+d-->(Create Spring)
+(Create Distance Constraint) ..> (Create Constraint) : extends
+(Create Spring) ..> (Create Constraint) : extends
+(Create Constraint) <-- e
+(Create Rigid Body) <-- e
+@enduml
