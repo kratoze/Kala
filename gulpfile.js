@@ -1,5 +1,6 @@
 var gulp = require("gulp");
 var concat = require("gulp-concat");
+var uglify = require("google-closure-compiler").gulp();
 
 var kalaFiles = [
   "./src/math/Vec2.js",
@@ -11,6 +12,7 @@ var kalaFiles = [
   "./src/core/Events.js",
   "./src/body/Body.js",
   "./src/body/CollisionInfo.js",
+  "./src/body/Polygon.js",
   "./src/body/Rectangle.js",
   "./src/body/Circle.js",
   "./src/body/RectangleCollision.js",
@@ -24,8 +26,24 @@ var kalaFiles = [
 ];
 
 gulp.task("concatKala", function() {
+  concatFiles();
+  return uglifyKala();
+});
+
+gulp.watch(kalaFiles, function() {
+  return concatFiles();
+});
+
+function concatFiles() {
   return gulp
     .src(kalaFiles)
     .pipe(concat("Kala.js"))
     .pipe(gulp.dest("./build/"));
-});
+}
+
+function uglifyKala() {
+  return gulp
+    .src("./build/Kala.js")
+    .pipe(uglify({ warning_level: "QUIET", js_output_file: "Kala.min.js" }))
+    .pipe(gulp.dest("./build/"));
+}

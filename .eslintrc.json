@@ -16,7 +16,8 @@
     "Physics": "writable",
     "Constraint": "writable",
     "Common": "writable",
-    "PIXI": "readonly"
+    "PIXI": "readonly",
+    "Factory": "writable"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

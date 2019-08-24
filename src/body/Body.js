@@ -15,7 +15,7 @@ var bodyIndex = new Indexer();
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
 function Body(x, y, mass, friction, restitution, options) {
-  this.bodyIndex = bodyIndex.incrementIndex();
+  this.bodyID = Common.incrementIndexer();
   this.center = Vec2(x, y);
   this.inertia = 0;
   if (mass !== undefined) {
@@ -50,6 +50,9 @@ function Body(x, y, mass, friction, restitution, options) {
   this.boundRadius = 0;
   this.isSensor = false;
   this.dampenValue = 0.985;
+
+  // create an object to store render info
+  this.render = {};
   if (options) {
     if (options.isSensor != undefined) {
       this.isSensor = options.isSensor;

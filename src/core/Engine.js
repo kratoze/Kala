@@ -5,6 +5,7 @@
 function Engine() {
   var self = this;
   this.movement = false;
+  this.hasChanged = false;
 
   this.currentTime;
   this.elapsedTime;
@@ -47,8 +48,16 @@ function Engine() {
    * Removes a Body from the engines Body array by its index
    * @param  {number} bodyIndex The index of the Body to be removed
    */
-  this.removeBody = function(bodyIndex) {
+  this.removeBodyByIndex = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
+  };
+
+  this.removeBody = function(body) {
+    var index = this.allBodies.indexOf(body);
+    if (index != -1) {
+      this.removeBodyByIndex(index);
+    }
+    this.hasChanged = true;
   };
 
   this.addConstraint = function(constraint) {
@@ -100,26 +109,35 @@ function Engine() {
     self.previousTime = self.currentTime;
     self.lagTime += self.elapsedTime;
 
-    while (self.lagTime >= self.kMPF) {
-      self.lagTime -= self.kMPF;
-      this.collisionInfo = this.physics.collision(this);
-      this.update();
-    }
-    if (this.allConstraints.length != 0) {
-      this.physics.maintainConstraints(self);
-    }
+    // Call all Custom Events in the Engine's Events object
     if (this.events.customEvents) {
       Object.values(this.events.customEvents).forEach(value => {
         value.call();
       });
     }
+    // Call all Collision Events in the Engine's Events objects
+    // CollisionInfo can be accessed within an Event function
     if (this.collisionInfo) {
       Object.values(this.events.collisionEvents).forEach(value => {
         value.call();
       });
     }
+    //Update renderer with new position and redraw
     if (render) {
       render.update(this);
+    }
+
+    while (self.lagTime >= self.kMPF) {
+      self.lagTime -= self.kMPF;
+
+      //Maintain any contraints in the Engine's Constraints array
+      this.physics.maintainConstraints(self);
+
+      // Detect and resolve collisions between bodies
+      // collisionInfo is returned by the physics and
+      // stored for use in events
+      this.collisionInfo = this.physics.collision(this);
+      this.update(render);
     }
   };
 

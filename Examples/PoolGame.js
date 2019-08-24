@@ -74,25 +74,24 @@ for (let row = 1; row < 6; row++) {
 
 //Add bodies to engine and render arrays once assets are loaded
 render.loader.onComplete.add(() => {
+  render.app.renderer.backgroundColor = "0x9c0d03";
+  whiteBall.render.texture = render.loader.resources["whiteball"].texture;
+
+  for (let i = 0; i < pockets.length; i++) {
+    pockets[i].render.texture = render.loader.resources["pot"].texture;
+  }
   engine.add(table);
   engine.add(pockets);
 
   engine.add(whiteBall);
 
   engine.add(eightBalls);
-  render.addSprites(table);
-  render.addSprites(pockets);
-  render.addSprite(whiteBall);
-  render.addSprites(eightBalls);
   engine.initializeEngineCore(render);
-  render.app.renderer.backgroundColor = "0x9c0d03";
-  render.bodyContainer.children[10].texture =
-    render.loader.resources["whiteball"].texture;
 
-  for (let i = 4; i < 10; i++) {
-    render.bodyContainer.children[i].texture =
-      render.loader.resources["pot"].texture;
-  }
+  // for (let i = 4; i < 10; i++) {
+  //   render.bodyContainer.children[i].texture =
+  //     render.loader.resources["pot"].texture;
+  // }
   //container.addChild();
   render.app.stage.addChild(line);
 });
@@ -140,11 +139,9 @@ function potBall() {
     engine.collisionInfo.bodyB.name == "8ball"
   ) {
     if (engine.collisionInfo.bodyA.name === "8ball") {
-      engine.removeBody(engine.collisionInfo.bodyAIndex);
-      render.removeSprite(engine.collisionInfo.bodyAIndex);
+      engine.removeBody(engine.collisionInfo.bodyA);
     } else {
-      engine.removeBody(engine.collisionInfo.bodyBIndex);
-      render.removeSprite(engine.collisionInfo.bodyBIndex);
+      engine.removeBody(engine.collisionInfo.bodyB);
     }
   }
 }

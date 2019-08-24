@@ -59,7 +59,7 @@ Vec2.prototype.scale = function(n) {
  * Calculates the dot product of a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector
- * @return {Vec2}     The dot product of the two Vectors
+ * @return {Number}     The dot product of the two Vectors
  */
 Vec2.prototype.dot = function(vec) {
   return this.x * vec.x + this.y * vec.y;
@@ -110,7 +110,7 @@ Vec2.prototype.normalize = function() {
 };
 
 /**
- * Caclulates the distance between a Vector and this Vector
+ * Calculates the distance between a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector
  * @return {number}     The distance between the two Vectors as a scalar
@@ -119,6 +119,16 @@ Vec2.prototype.distance = function(vec) {
   var x = this.x - vec.x;
   var y = this.y - vec.y;
   return Math.sqrt(x * x + y * y);
+};
+
+/**
+ * Finds the midpoint between 2 Vectors
+ *
+ * @param  {Vec2} vec The other Vector
+ * @return {Vec2}     The midpoint as a Vector
+ */
+Vec2.prototype.midpoint = function(vec) {
+  return Vec2((this.x + vec.x) / 2, (this.y + vec.y) / 2);
 };
 
 /**
@@ -149,6 +159,7 @@ Vec2.prototype.angleFromVector = function(vec) {
 function Engine() {
   var self = this;
   this.movement = false;
+  this.hasChanged = false;
 
   this.currentTime;
   this.elapsedTime;
@@ -175,7 +186,6 @@ function Engine() {
     if (Array.isArray(bodies)) {
       bodies.forEach(function(body) {
         if (body instanceof Body) {
-          //self.applyGravity(body);
           self.allBodies.push(body);
           self.applyGravity(self.allBodies[self.allBodies.length - 1]);
         }
@@ -192,13 +202,24 @@ function Engine() {
    * Removes a Body from the engines Body array by its index
    * @param  {number} bodyIndex The index of the Body to be removed
    */
-  this.removeBody = function(bodyIndex) {
+  this.removeBodyByIndex = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
+  };
+
+  this.removeBody = function(body) {
+    var index = this.allBodies.indexOf(body);
+    if (index != -1) {
+      this.removeBodyByIndex(index);
+    }
+    this.hasChanged = true;
   };
 
   this.addConstraint = function(constraint) {
     this.allConstraints.push(constraint);
-    //this.allBodies.push(constraint.constraintLink);
+  };
+
+  this.removeConstraint = function(bodyIndex) {
+    this.allConstraints.splice(bodyIndex, 1);
   };
 
   this.applyGravityAllBodies = function() {
@@ -242,26 +263,35 @@ function Engine() {
     self.previousTime = self.currentTime;
     self.lagTime += self.elapsedTime;
 
-    while (self.lagTime >= self.kMPF) {
-      self.lagTime -= self.kMPF;
-      this.collisionInfo = this.physics.collision(this);
-      this.update();
-    }
-    if (this.allConstraints.length != 0) {
-      this.physics.maintainConstraints(self);
-    }
+    // Call all Custom Events in the Engine's Events object
     if (this.events.customEvents) {
       Object.values(this.events.customEvents).forEach(value => {
         value.call();
       });
     }
+    // Call all Collision Events in the Engine's Events objects
+    // CollisionInfo can be accessed within an Event function
     if (this.collisionInfo) {
       Object.values(this.events.collisionEvents).forEach(value => {
         value.call();
       });
     }
+    //Update renderer with new position and redraw
     if (render) {
       render.update(this);
+    }
+
+    while (self.lagTime >= self.kMPF) {
+      self.lagTime -= self.kMPF;
+
+      //Maintain any contraints in the Engine's Constraints array
+      this.physics.maintainConstraints(self);
+
+      // Detect and resolve collisions between bodies
+      // collisionInfo is returned by the physics and
+      // stored for use in events
+      this.collisionInfo = this.physics.collision(this);
+      this.update(render);
     }
   };
 
@@ -278,24 +308,22 @@ function Engine() {
 
 function PixiRender(width, height, theme, scale) {
   var self = this;
-  //Set up PIXI
 
+  //Set up PIXI Application
   this.app = new PIXI.Application({
     height: width,
     width: height,
     backgroundColor: 0xfcfccf,
-    forceCanvas: true,
     antialias: true
   });
-
   this.scale = scale;
-
   document.body.appendChild(this.app.view);
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
 
-  var graphics = new PIXI.Graphics();
+  var renderBodies = {};
   this.bodyContainer = new PIXI.Container();
-  this.constraintContainer = new PIXI.Container();
+
+  this.lineContainer = new PIXI.Container();
   this.loader = new PIXI.Loader();
   this.isLoaded = false;
   var theme = theme || "stone";
@@ -355,36 +383,59 @@ function PixiRender(width, height, theme, scale) {
   }
 
   this.app.stage.addChild(this.bodyContainer);
-  this.app.stage.addChild(this.constraintContainer);
-
-  //this.app.stage.addChild(graphics);
+  this.app.stage.addChild(this.lineContainer);
 
   this.loader.onComplete.add(() => {
     this.isLoaded = true;
   });
 
-  this.addSprite = function(body) {
-    if (body.type === "Rectangle") {
-      var r = new PIXI.Sprite(sprites.rectTexture);
-      r.anchor.x = r.anchor.y = 0.5;
-      r.position.x = body.center.x;
-      r.position.y = body.center.y;
-      r.width = body.width;
-      r.height = body.height;
+  this.addRectangle = function(rect) {};
 
-      this.bodyContainer.addChild(r);
-      //body.renderIndex = this.app.stage.getChildIndex(r);
+  this.addSprite = function(body) {
+    var renderBody = renderBodies[body.bodyID];
+    if (!renderBody) {
+      console.log("here");
+      if (body.type === "Rectangle") {
+        renderBodies[body.bodyID] = new PIXI.Sprite(
+          body.render.texture || sprites.rectTexture
+        );
+        renderBodies[body.bodyID].anchor.x = renderBodies[
+          body.bodyID
+        ].anchor.y = 0.5;
+        renderBody = renderBodies[body.bodyID];
+        this.bodyContainer.addChild(renderBody);
+      } else if (body.type === "Circle") {
+        renderBodies[body.bodyID] = new PIXI.Sprite(
+          body.render.texture || sprites.circleTexture
+        );
+        renderBody = renderBodies[body.bodyID];
+
+        renderBody.anchor.x = renderBody.anchor.y = 0.5;
+        renderBody.height = renderBody.width = body.radius * 2;
+        this.bodyContainer.addChild(renderBody);
+      }
     }
-    if (body.type === "Circle") {
-      //Add circle
-      var c = new PIXI.Sprite(sprites.circleTexture);
-      c.anchor.x = c.anchor.y = 0.5;
-      c.height = c.width = body.radius * 2;
-      c.position.x = body.center.x;
-      c.position.y = body.center.y;
-      this.bodyContainer.addChild(c);
-      //body.renderIndex = this.app.stage.getChildIndex(c);
-    }
+    renderBody.position.x = body.center.x;
+    renderBody.position.y = body.center.y;
+    renderBody.width = body.radius ? body.radius * 2 : body.width;
+    renderBody.height = body.radius ? body.radius * 2 : body.height;
+    renderBody.rotation = body.angle;
+    //   r.position.x = body.center.x;
+    //   r.position.y = body.center.y;
+    //   r.width = body.width;
+    //   r.height = body.height;
+    //   r.rotation = body.angle;
+    //   renderBodies[body.bodyID] = r;
+    //   //body.renderIndex = this.app.stage.getChildIndex(r);
+    // }
+    //
+    //
+    //   c.position.x = body.center.x;
+    //   c.position.y = body.center.y;
+    //   c.rotation = body.angle;
+    //   renderBodies[body.bodyID] = c;
+    //   //body.renderIndex = this.app.stage.getChildIndex(c);
+    // }
   };
 
   this.addSprites = function(bodies) {
@@ -404,46 +455,98 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
-  this.drawLine = function(x1, y1, x2, y2) {
-    graphics.clear();
-    graphics.lineStyle(0.1, 0x000000, 1);
-    graphics.moveTo(x1, y1);
-    graphics.lineTo(x2, y2);
-  };
-  this.update = function(engine) {
-    var engineBodies = engine.allBodies;
-    for (let i = 0; i < this.bodyContainer.children.length; i++) {
-      var engineBody = engineBodies[i];
-      var renderBody = this.bodyContainer.children[i];
+  this.drawLine = function(v1, v2) {
+    var graphics = new PIXI.Graphics();
 
-      var engineBodyPos = {
-        x: engineBody.center.x,
-        y: engineBody.center.y,
-        angle: engineBody.angle,
-        width: engineBody.width,
-        height: engineBody.height,
-        radius: engineBody.radius * 2
-      };
-      renderBody.position.x = engineBodyPos.x;
-      renderBody.position.y = engineBodyPos.y;
-      renderBody.rotation = engineBodyPos.angle;
-      renderBody.width = engineBody.radius
-        ? engineBodyPos.radius
-        : engineBodyPos.width;
-      renderBody.height = engineBodyPos.radius
-        ? engineBodyPos.radius
-        : engineBodyPos.height;
+    this.lineContainer.addChild(graphics);
+
+    graphics.clear();
+    graphics.lineStyle(1, 0x000000, 1);
+    graphics.moveTo(v1.x, v1.y);
+    graphics.lineTo(v2.x, v2.y);
+  };
+
+  this.drawPolygon = function(polygon) {
+    var polygonGraphics = renderBodies[polygon.bodyID];
+    if (!polygonGraphics) {
+      renderBodies[polygon.bodyID] = new PIXI.Graphics();
+      this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
+      polygonGraphics = renderBodies[polygon.bodyID];
+    }
+    polygonGraphics.clear();
+    polygonGraphics.lineStyle(1);
+    //polygonGraphics.beginFill(0x3500fa, 1);
+
+    polygonGraphics.drawPolygon(polygon.verticesToPath());
+    //polygonGraphics.endFill();
+  };
+
+  this.renderEdge = function(v1, v2) {};
+
+  this.create = function(engine) {
+    if (engine.hasChanged) {
+      this.clear();
+      engine.hasChanged = false;
     }
 
-    engine.allConstraints.forEach(function(constraint) {
-      self.drawLine(
-        constraint.bodyA.center.x,
-        constraint.bodyA.center.y,
-        constraint.bodyB.center.x,
-        constraint.bodyB.center.y
-      );
-      self.constraintContainer.addChild(graphics);
-    });
+    var bodies = engine.allBodies;
+
+    for (let i = 0; i < bodies.length; i++) {
+      if (bodies[i].type === "Rectangle" || bodies[i].type === "Circle") {
+        this.addSprites(bodies[i]);
+      } else if (bodies[i].type === "Polygon") {
+        this.drawPolygon(bodies[i]);
+      }
+    }
+  };
+
+  this.clear = function() {
+    renderBodies = {};
+    this.bodyContainer.removeChildren();
+    this.lineContainer.removeChildren();
+    // for (let i = this.bodyContainer.children.length - 1; i >= 0; i--) {
+    //   this.bodyContainer.removeChild(this.bodyContainer.children[i]);
+    // }
+    // for (let i = this.lineContainer.children.length - 1; i >= 0; i--) {
+    //   this.lineContainer.removeChild(this.lineContainer.children[i]);
+    // }
+  };
+
+  this.update = function(engine) {
+    this.create(engine);
+    //   var engineBodies = engine.allBodies;
+    //   for (let i = 0; i < this.bodyContainer.children.length; i++) {
+    //     var engineBody = engineBodies[i];
+    //     var renderBody = renderBodies[engineBody.bodyID];
+    //
+    //     var engineBodyPos = {
+    //       x: engineBody.center.x,
+    //       y: engineBody.center.y,
+    //       angle: engineBody.angle,
+    //       width: engineBody.width,
+    //       height: engineBody.height,
+    //       radius: engineBody.radius * 2
+    //     };
+    //     renderBody.position.x = engineBodyPos.x;
+    //     renderBody.position.y = engineBodyPos.y;
+    //     renderBody.rotation = engineBodyPos.angle;
+    //     renderBody.width = engineBody.radius
+    //       ? engineBodyPos.radius
+    //       : engineBodyPos.width;
+    //     renderBody.height = engineBodyPos.radius
+    //       ? engineBodyPos.radius
+    //       : engineBodyPos.height;
+    //   }
+    //
+    //   engine.allConstraints.forEach(function(constraint) {
+    //     self.drawLine(
+    //       constraint.bodyA.center.x,
+    //       constraint.bodyA.center.y,
+    //       constraint.bodyB.center.x,
+    //       constraint.bodyB.center.y
+    //     );
+    //     self.constraintContainer.addChild(graphics);
+    //   });
   };
 }
 
@@ -458,11 +561,11 @@ function Physics() {
   var collision = function(engine) {
     var i, j, k;
     var collisionInfo = new CollisionInfo();
-    var collisionResponse = {};
     for (k = 0; k < relaxationCount; k++) {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
           if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+            //console.log("HER!");
             if (
               engine.allBodies[i].collisionTest(
                 engine.allBodies[j],
@@ -507,7 +610,7 @@ function Physics() {
     var i;
     var collisionInfo = new CollisionInfo();
     for (i = 0; i < engine.allConstraints.length; i++) {
-      if (engine.allConstraints[i].maintainConstraint(engine, collisionInfo)) {
+      if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
         resolveCollision(
           engine.allConstraints[i].bodyA,
           engine.allConstraints[i].bodyB,
@@ -632,11 +735,17 @@ function Physics() {
 var Common = {};
 
 (function() {
+  Common.globalID = 0;
+
   Common.extend = function(Child, Parent) {
     var prototype = Object.create(Parent.prototype);
     prototype.constructor = Child;
     Child.prototype = prototype;
     return Child;
+  };
+
+  Common.incrementIndexer = function() {
+    return (Common.globalID += 1);
   };
 })();
 
@@ -678,7 +787,7 @@ var bodyIndex = new Indexer();
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
 function Body(x, y, mass, friction, restitution, options) {
-  this.bodyIndex = bodyIndex.incrementIndex();
+  this.bodyID = Common.incrementIndexer();
   this.center = Vec2(x, y);
   this.inertia = 0;
   if (mass !== undefined) {
@@ -713,6 +822,9 @@ function Body(x, y, mass, friction, restitution, options) {
   this.boundRadius = 0;
   this.isSensor = false;
   this.dampenValue = 0.985;
+
+  // create an object to store render info
+  this.render = {};
   if (options) {
     if (options.isSensor != undefined) {
       this.isSensor = options.isSensor;
@@ -863,6 +975,92 @@ CollisionInfo.prototype.changeDir = function() {
   var n = this.start;
   this.start = this.end;
   this.end = n;
+};
+
+var Polygon = function(
+  x,
+  y,
+  vertices,
+  size,
+  mass,
+  friction,
+  restitution,
+  options
+) {
+  Body.call(this, x, y, mass, friction, restitution, options);
+  this.type = "Polygon";
+  // vertices is an array of Vec2
+  this.vertices = vertices;
+  this.edges = this.getEdges();
+  this.faceNormals = this.getFaceNormals();
+};
+
+Common.extend(Polygon, Body);
+
+Polygon.prototype.move = function(v) {
+  for (let i = 0; i < this.vertices.length; i++) {
+    this.vertices[i] = this.vertices[i].add(v);
+  }
+  this.edges = this.getEdges();
+  this.faceNormals = this.getFaceNormals();
+  //this.center.add(v)
+  return this;
+};
+
+Polygon.prototype.rotate = function(angle) {
+  this.angle += angle;
+  for (let i = 0; i < this.vertices.length; i++) {
+    this.vertices[i] = this.vertices[i].rotate(this.center, angle);
+  }
+  this.edges = this.getEdges();
+  this.faceNormals = this.getFaceNormals();
+};
+
+Polygon.prototype.updateInertia = function() {};
+
+Polygon.prototype.getEdges = function() {
+  var tmpEdges = [];
+  for (let i = 0; i < this.vertices.length - 1; i++) {
+    tmpEdges[i] = this.vertices[i + 1].subtract(this.vertices[i]);
+  }
+  tmpEdges[tmpEdges.length] = this.vertices[0].subtract(
+    this.vertices[this.vertices.length - 1]
+  );
+  return tmpEdges;
+};
+
+Polygon.prototype.getFaceNormals = function() {
+  var tmpFNormals = [];
+
+  for (let i = 0; i < this.edges.length; i++) {
+    tmpFNormals[i] = Vec2(this.edges[i].y, -this.edges[i].x);
+    tmpFNormals[i] = tmpFNormals[i].normalize();
+  }
+  return tmpFNormals;
+};
+
+Polygon.prototype.verticesToPath = function() {
+  var vertexArray = [];
+  for (let i = 0; i < this.vertices.length; i++) {
+    vertexArray.push(this.vertices[i].x);
+    vertexArray.push(this.vertices[i].y);
+  }
+  return vertexArray;
+};
+
+Polygon.prototype.findCentroid = function() {};
+
+Polygon.prototype.draw = function(render) {
+  //render.drawPolygon(this);
+  //   var midpoint;
+  //   for (let i = 0; i < this.vertices.length - 1; i++) {
+  //     render.drawLine(this.vertices[i], this.vertices[i + 1]);
+  //     midpoint = this.vertices[i].midpoint(this.vertices[i + 1]);
+  //     render.drawLine(midpoint, midpoint.add(this.faceNormals[i].scale(10)));
+  //   }
+  //   render.drawLine(this.vertices[0], this.vertices[this.vertices.length - 1]);
+  //   midpoint = this.vertices[0].midpoint(this.vertices[this.vertices.length - 1]);
+  //   render.drawLine(midpoint, midpoint.add(this.faceNormals[2].scale(10)));
 };
 
 /**
@@ -1306,6 +1504,8 @@ function Constraint(bodyA, bodyB, length, stiffness) {
   this.index = constraintIndex.incrementIndex();
   this.bodyA = bodyA;
   this.bodyB = bodyB;
+  this.restingAngleA = this.bodyA.angle;
+  this.restingAngleB = this.bodyB.angle;
   this.length = length;
   this.stiffness = stiffness;
 }
@@ -1401,7 +1601,7 @@ DistanceConstraint.prototype.initialiseConstraint = function() {
 
 function NaiveDistance(bodyA, bodyB, length, stiffness) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
-  this.minLength = 0.005; //From Matterjs - Contraints line 26
+  this.minLength = 0.0000005; //From Matterjs - Contraints line 26
 
   var initialMiddlePoint = this.bodyA.center.add(this.bodyB.center);
   this.constraintLink = new Rectangle(
@@ -1425,7 +1625,7 @@ NaiveDistance.prototype.maintainConstraint = function(collisionInfo) {
   var vFromAtoB = aPos.subtract(bPos);
   var distBA = vFromBtoA.length();
   var distAB = vFromAtoB.length();
-  var normal = vFromAtoB.normalize();
+  var normal = vFromBtoA.normalize();
 
   var normalFrom2to1 = vFromBtoA.normalize();
   var radiusC2 = normalFrom2to1.scale(this.length);
@@ -1437,16 +1637,16 @@ NaiveDistance.prototype.maintainConstraint = function(collisionInfo) {
 
   if (distBA > this.length) {
     collisionInfo.setInfo(
-      this.length - distAB / distAB,
-      normal.scale(this.bodyB.friction),
+      this.length - distBA,
+      normal,
       this.bodyB.center.add(radiusC2)
     );
 
     status = true;
   } else if (distBA < this.length) {
     collisionInfo.setInfo(
-      distAB - this.length / distAB,
-      normal.scale(this.bodyB.friction),
+      this.length - distBA,
+      normal.scale(-1),
       this.bodyB.center.add(radiusC2)
     );
     status = true;
@@ -1473,8 +1673,6 @@ NaiveDistance.prototype.updateConstraint = function() {
 
 function Spring(bodyA, bodyB, length, stiffness, options) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
-  this.restingAngleA = this.bodyA.angle;
-  this.restingAngleB = this.bodyB.angle;
   this.centerA = this.bodyA.center;
   this.dampingConstant = 0.0025;
   if (options) {

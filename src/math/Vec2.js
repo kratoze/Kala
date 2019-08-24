@@ -110,7 +110,7 @@ Vec2.prototype.normalize = function() {
 };
 
 /**
- * Caclulates the distance between a Vector and this Vector
+ * Calculates the distance between a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector
  * @return {number}     The distance between the two Vectors as a scalar
@@ -119,6 +119,16 @@ Vec2.prototype.distance = function(vec) {
   var x = this.x - vec.x;
   var y = this.y - vec.y;
   return Math.sqrt(x * x + y * y);
+};
+
+/**
+ * Finds the midpoint between 2 Vectors
+ *
+ * @param  {Vec2} vec The other Vector
+ * @return {Vec2}     The midpoint as a Vector
+ */
+Vec2.prototype.midpoint = function(vec) {
+  return Vec2((this.x + vec.x) / 2, (this.y + vec.y) / 2);
 };
 
 /**

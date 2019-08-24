@@ -9,11 +9,11 @@ function Physics() {
   var collision = function(engine) {
     var i, j, k;
     var collisionInfo = new CollisionInfo();
-    var collisionResponse = {};
     for (k = 0; k < relaxationCount; k++) {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
           if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+            //console.log("HER!");
             if (
               engine.allBodies[i].collisionTest(
                 engine.allBodies[j],
@@ -58,7 +58,7 @@ function Physics() {
     var i;
     var collisionInfo = new CollisionInfo();
     for (i = 0; i < engine.allConstraints.length; i++) {
-      if (engine.allConstraints[i].maintainConstraint(engine, collisionInfo)) {
+      if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
         resolveCollision(
           engine.allConstraints[i].bodyA,
           engine.allConstraints[i].bodyB,

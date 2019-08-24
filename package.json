@@ -15,9 +15,11 @@
   "devDependencies": {
     "eslint": "^5.16.0",
     "gulp": "^4.0.2",
-    "gulp-concat": "^2.6.1"
+    "gulp-concat": "^2.6.1",
+    "gulp-uglify": "^3.0.2"
   },
   "dependencies": {
+    "google-closure-compiler": "^20190819.0.0",
     "pixi.js": "^5.0.4"
   }
 }
