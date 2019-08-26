@@ -13,7 +13,6 @@ function Physics() {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
           if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
-            //console.log("HER!");
             if (
               engine.allBodies[i].collisionTest(
                 engine.allBodies[j],

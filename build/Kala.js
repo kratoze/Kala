@@ -276,7 +276,7 @@ function Engine() {
         value.call();
       });
     }
-    //Update renderer with new position and redraw
+    // Update renderer with new position and redraw
     if (render) {
       render.update(this);
     }
@@ -284,10 +284,10 @@ function Engine() {
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
 
-      //Maintain any contraints in the Engine's Constraints array
+      // Maintain any contraints in the Engine's Constraints array
       this.physics.maintainConstraints(self);
 
-      // Detect and resolve collisions between bodies
+      // Detect and resolve collisions between bodies.
       // collisionInfo is returned by the physics and
       // stored for use in events
       this.collisionInfo = this.physics.collision(this);
@@ -303,8 +303,6 @@ function Engine() {
     self.runGameLoop(render);
   };
 }
-
-//var renderIndex = new Indexer();
 
 function PixiRender(width, height, theme, scale) {
   var self = this;
@@ -325,7 +323,7 @@ function PixiRender(width, height, theme, scale) {
 
   this.lineContainer = new PIXI.Container();
   this.loader = new PIXI.Loader();
-  this.isLoaded = false;
+
   var theme = theme || "stone";
   var sprites = {};
   var rectPNG;
@@ -368,14 +366,9 @@ function PixiRender(width, height, theme, scale) {
       case "space":
         sprites.rectTexture = self.loader.resources["ship"].texture;
         sprites.circleTexture = self.loader.resources["asteroid1"].texture;
-        // sprites.explosionSheet = self.loader.resources["explosion"].sprites;
-        // sprites.explosion = new PIXI.AnimatedSprite(
-        //   sprites.explosionSheet.animations["explosion"]
-        // );
         break;
       case "pool":
         sprites.rectTexture = self.loader.resources["wood"].texture;
-
         break;
       default:
         break;
@@ -385,57 +378,55 @@ function PixiRender(width, height, theme, scale) {
   this.app.stage.addChild(this.bodyContainer);
   this.app.stage.addChild(this.lineContainer);
 
-  this.loader.onComplete.add(() => {
-    this.isLoaded = true;
-  });
+  this.addRectangle = function(rect) {
+    renderBodies[rect.bodyID] = new PIXI.Sprite(
+      rect.render.texture || sprites.rectTexture
+    );
+    renderBodies[rect.bodyID].anchor.x = renderBodies[
+      rect.bodyID
+    ].anchor.y = 0.5;
+    this.bodyContainer.addChild(renderBodies[rect.bodyID]);
+    renderBodies[rect.bodyID].renderUpdate = this.updateBody;
+    return renderBodies[rect.bodyID];
+  };
 
-  this.addRectangle = function(rect) {};
+  this.addCircle = function(circ) {
+    renderBodies[circ.bodyID] = new PIXI.Sprite(
+      circ.render.texture || sprites.circleTexture
+    );
+    renderBodies[circ.bodyID].anchor.x = renderBodies[
+      circ.bodyID
+    ].anchor.y = 0.5;
+    renderBodies[circ.bodyID].height = renderBodies[circ.bodyID].width =
+      circ.radius * 2;
+    this.bodyContainer.addChild(renderBodies[circ.bodyID]);
+    renderBodies[circ.bodyID].renderUpdate = this.updateBody;
+    return renderBodies[circ.bodyID];
+  };
 
-  this.addSprite = function(body) {
-    var renderBody = renderBodies[body.bodyID];
-    if (!renderBody) {
-      console.log("here");
-      if (body.type === "Rectangle") {
-        renderBodies[body.bodyID] = new PIXI.Sprite(
-          body.render.texture || sprites.rectTexture
-        );
-        renderBodies[body.bodyID].anchor.x = renderBodies[
-          body.bodyID
-        ].anchor.y = 0.5;
-        renderBody = renderBodies[body.bodyID];
-        this.bodyContainer.addChild(renderBody);
-      } else if (body.type === "Circle") {
-        renderBodies[body.bodyID] = new PIXI.Sprite(
-          body.render.texture || sprites.circleTexture
-        );
-        renderBody = renderBodies[body.bodyID];
-
-        renderBody.anchor.x = renderBody.anchor.y = 0.5;
-        renderBody.height = renderBody.width = body.radius * 2;
-        this.bodyContainer.addChild(renderBody);
-      }
+  this.addPolygon = function(polygon) {
+    var polygonGraphics = renderBodies[polygon.bodyID];
+    if (!polygonGraphics) {
+      renderBodies[polygon.bodyID] = new PIXI.Graphics();
+      this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
+      polygonGraphics = renderBodies[polygon.bodyID];
     }
-    renderBody.position.x = body.center.x;
-    renderBody.position.y = body.center.y;
-    renderBody.width = body.radius ? body.radius * 2 : body.width;
-    renderBody.height = body.radius ? body.radius * 2 : body.height;
-    renderBody.rotation = body.angle;
-    //   r.position.x = body.center.x;
-    //   r.position.y = body.center.y;
-    //   r.width = body.width;
-    //   r.height = body.height;
-    //   r.rotation = body.angle;
-    //   renderBodies[body.bodyID] = r;
-    //   //body.renderIndex = this.app.stage.getChildIndex(r);
-    // }
-    //
-    //
-    //   c.position.x = body.center.x;
-    //   c.position.y = body.center.y;
-    //   c.rotation = body.angle;
-    //   renderBodies[body.bodyID] = c;
-    //   //body.renderIndex = this.app.stage.getChildIndex(c);
-    // }
+
+    renderBodies[polygon.bodyID].renderUpdate = this.updatePolygon;
+    return renderBodies[polygon.bodyID];
+  };
+
+  this.addShape = function(body) {
+    switch (body.type) {
+      case "Rectangle":
+        return this.addRectangle(body);
+      case "Circle":
+        return this.addCircle(body);
+      case "Polygon":
+        return this.addPolygon(body);
+      default:
+        break;
+    }
   };
 
   this.addSprites = function(bodies) {
@@ -457,96 +448,80 @@ function PixiRender(width, height, theme, scale) {
 
   this.drawLine = function(v1, v2) {
     var graphics = new PIXI.Graphics();
+    graphics.clear();
 
     this.lineContainer.addChild(graphics);
 
-    graphics.clear();
-    graphics.lineStyle(1, 0x000000, 1);
+    graphics.lineStyle(1 / scale, 0x000000, 1);
     graphics.moveTo(v1.x, v1.y);
     graphics.lineTo(v2.x, v2.y);
   };
 
-  this.drawPolygon = function(polygon) {
-    var polygonGraphics = renderBodies[polygon.bodyID];
-    if (!polygonGraphics) {
-      renderBodies[polygon.bodyID] = new PIXI.Graphics();
-      this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
-      polygonGraphics = renderBodies[polygon.bodyID];
-    }
-    polygonGraphics.clear();
-    polygonGraphics.lineStyle(1);
-    //polygonGraphics.beginFill(0x3500fa, 1);
-
-    polygonGraphics.drawPolygon(polygon.verticesToPath());
-    //polygonGraphics.endFill();
-  };
-
   this.renderEdge = function(v1, v2) {};
 
-  this.create = function(engine) {
-    if (engine.hasChanged) {
-      this.clear();
-      engine.hasChanged = false;
-    }
+  this.updateBody = function(body) {
+    var renderBody = renderBodies[body.bodyID];
+    renderBody.position.x = body.center.x;
+    renderBody.position.y = body.center.y;
+    renderBody.width = body.radius ? body.radius * 2 : body.width;
+    renderBody.height = body.radius ? body.radius * 2 : body.height;
+    renderBody.rotation = body.angle;
+  };
 
-    var bodies = engine.allBodies;
+  this.updatePolygon = function(polygon) {
+    var polygonGraphics = renderBodies[polygon.bodyID];
+    polygonGraphics.clear();
+    polygonGraphics.lineStyle(1 / scale, polygon.lineColor || 0x03f8fc);
+    polygonGraphics.lineColor;
+    //polygonGraphics.beginFill(0x3500fa, 1);
+    polygonGraphics.drawPolygon(polygon.verticesToPath());
+    //polygonGraphics.endFill();
 
-    for (let i = 0; i < bodies.length; i++) {
-      if (bodies[i].type === "Rectangle" || bodies[i].type === "Circle") {
-        this.addSprites(bodies[i]);
-      } else if (bodies[i].type === "Polygon") {
-        this.drawPolygon(bodies[i]);
-      }
+    var midpoint;
+    for (let i = 0; i < polygon.vertices.length - 1; i++) {
+      //render.drawLine(this.vertices[i], this.vertices[i + 1]);
+      midpoint = polygon.vertices[i].midpoint(polygon.vertices[i + 1]);
+      self.drawLine(
+        midpoint,
+        midpoint.add(polygon.faceNormals[i].scale(10 / scale))
+      );
     }
+    //render.drawLine(polygon.vertices[0], polygon.vertices[polygon.vertices.length - 1]);
+    midpoint = polygon.vertices[0].midpoint(
+      polygon.vertices[polygon.vertices.length - 1]
+    );
+    self.drawLine(
+      midpoint,
+      midpoint.add(
+        polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)
+      )
+    );
   };
 
   this.clear = function() {
     renderBodies = {};
     this.bodyContainer.removeChildren();
     this.lineContainer.removeChildren();
-    // for (let i = this.bodyContainer.children.length - 1; i >= 0; i--) {
-    //   this.bodyContainer.removeChild(this.bodyContainer.children[i]);
-    // }
-    // for (let i = this.lineContainer.children.length - 1; i >= 0; i--) {
-    //   this.lineContainer.removeChild(this.lineContainer.children[i]);
-    // }
   };
 
   this.update = function(engine) {
-    this.create(engine);
-    //   var engineBodies = engine.allBodies;
-    //   for (let i = 0; i < this.bodyContainer.children.length; i++) {
-    //     var engineBody = engineBodies[i];
-    //     var renderBody = renderBodies[engineBody.bodyID];
-    //
-    //     var engineBodyPos = {
-    //       x: engineBody.center.x,
-    //       y: engineBody.center.y,
-    //       angle: engineBody.angle,
-    //       width: engineBody.width,
-    //       height: engineBody.height,
-    //       radius: engineBody.radius * 2
-    //     };
-    //     renderBody.position.x = engineBodyPos.x;
-    //     renderBody.position.y = engineBodyPos.y;
-    //     renderBody.rotation = engineBodyPos.angle;
-    //     renderBody.width = engineBody.radius
-    //       ? engineBodyPos.radius
-    //       : engineBodyPos.width;
-    //     renderBody.height = engineBodyPos.radius
-    //       ? engineBodyPos.radius
-    //       : engineBodyPos.height;
-    //   }
-    //
-    //   engine.allConstraints.forEach(function(constraint) {
-    //     self.drawLine(
-    //       constraint.bodyA.center.x,
-    //       constraint.bodyA.center.y,
-    //       constraint.bodyB.center.x,
-    //       constraint.bodyB.center.y
-    //     );
-    //     self.constraintContainer.addChild(graphics);
-    //   });
+    //if (engine.hasChanged) {
+    this.clear();
+    engine.hasChanged = false;
+    //}
+
+    var bodies = engine.allBodies;
+    var renderBody;
+
+    for (let i = 0; i < bodies.length; i++) {
+      //bodies[i].draw(this);
+      renderBody = renderBodies[bodies[i].bodyID];
+      if (!renderBody) {
+        renderBody = this.addShape(bodies[i]);
+      }
+      renderBody.renderUpdate(bodies[i]);
+      //this.updateBody(bodies[i]);
+    }
   };
 }
 
@@ -565,7 +540,6 @@ function Physics() {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
           if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
-            //console.log("HER!");
             if (
               engine.allBodies[i].collisionTest(
                 engine.allBodies[j],
@@ -884,7 +858,7 @@ Body.prototype.boundTest = function(otherShape) {
   var rSum = this.boundRadius + otherShape.boundRadius;
   var dist = vFrom1to2.length();
   if (dist > rSum) {
-    return false; //not overlapping
+    return true; //not overlapping
   }
   return true;
 };
@@ -987,12 +961,15 @@ var Polygon = function(
   restitution,
   options
 ) {
-  Body.call(this, x, y, mass, friction, restitution, options);
+  this.vertices = vertices;
+  var centroid = this.findCentroid();
+  Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);
   this.type = "Polygon";
   // vertices is an array of Vec2
-  this.vertices = vertices;
   this.edges = this.getEdges();
   this.faceNormals = this.getFaceNormals();
+
+  this.updateInertia();
 };
 
 Common.extend(Polygon, Body);
@@ -1003,7 +980,7 @@ Polygon.prototype.move = function(v) {
   }
   this.edges = this.getEdges();
   this.faceNormals = this.getFaceNormals();
-  //this.center.add(v)
+  this.center = this.center.add(v);
   return this;
 };
 
@@ -1048,19 +1025,84 @@ Polygon.prototype.verticesToPath = function() {
   return vertexArray;
 };
 
-Polygon.prototype.findCentroid = function() {};
+Polygon.prototype.findCentroid = function() {
+  var signedArea = 0,
+    a,
+    v0,
+    v1;
+  var centroid = Vec2(0, 0);
+
+  // calculate the signed area between vertices
+  for (let i = 0; i < this.vertices.length - 1; i++) {
+    v0 = this.vertices[i];
+    v1 = this.vertices[i + 1];
+
+    // a = (xi * yi+1 - xi+1 * yi)
+    a = v0.x * v1.y - v1.x * v0.y;
+    signedArea += a;
+    centroid.x += (v0.x + v1.x) * a;
+    centroid.y += (v0.y + v1.y) * a;
+  }
+
+  // calulate the signed area between the last and first vertices
+  v0 = this.vertices[this.vertices.length - 1];
+  v1 = this.vertices[0];
+  a = v0.x * v1.y - v1.x * v0.y;
+  signedArea += a;
+  centroid.x += (v0.x + v1.x) * a;
+  centroid.y += (v0.y + v1.y) * a;
+
+  signedArea = signedArea / 2;
+  centroid.x = centroid.x / (6 * signedArea);
+  centroid.y = centroid.y / (6 * signedArea);
+
+  return centroid;
+};
+var centroidGraphic = new PIXI.Graphics();
 
 Polygon.prototype.draw = function(render) {
+  centroidGraphic.clear();
+  render.app.stage.addChild(centroidGraphic);
+  centroidGraphic.lineStyle(1);
+
+  centroidGraphic.drawCircle(this.center.x, this.center.y, 10);
+
   //render.drawPolygon(this);
-  //   var midpoint;
-  //   for (let i = 0; i < this.vertices.length - 1; i++) {
-  //     render.drawLine(this.vertices[i], this.vertices[i + 1]);
-  //     midpoint = this.vertices[i].midpoint(this.vertices[i + 1]);
-  //     render.drawLine(midpoint, midpoint.add(this.faceNormals[i].scale(10)));
-  //   }
-  //   render.drawLine(this.vertices[0], this.vertices[this.vertices.length - 1]);
-  //   midpoint = this.vertices[0].midpoint(this.vertices[this.vertices.length - 1]);
-  //   render.drawLine(midpoint, midpoint.add(this.faceNormals[2].scale(10)));
+  // var midpoint;
+  // for (let i = 0; i < this.vertices.length - 1; i++) {
+  //   //render.drawLine(this.vertices[i], this.vertices[i + 1]);
+  //   midpoint = this.vertices[i].midpoint(this.vertices[i + 1]);
+  //   render.drawLine(midpoint, midpoint.add(this.faceNormals[i].scale(10)));
+  // }
+  // //render.drawLine(this.vertices[0], this.vertices[this.vertices.length - 1]);
+  // midpoint = this.vertices[0].midpoint(this.vertices[this.vertices.length - 1]);
+  // render.drawLine(midpoint, midpoint.add(this.faceNormals[2].scale(10)));
+};
+
+Polygon.prototype.updateInertia = function() {
+  // inertia= mass*area
+  //
+  // find the area of the polygon
+  // area = sum of (XnYn+1 - YnXn+1) / 2
+  // where n is number of vertices
+  if (this.invMass === 0) {
+    this.inertia = 0;
+  } else {
+    var areaSum = 0;
+    var area;
+    for (let i = 0; i < this.vertices - 1; i++) {
+      areaSum +=
+        this.vertices[i].x * this.vertices[i + 1].y -
+        this.vertices[i].y * this.vertices[i + 1].x;
+    }
+    areaSum +=
+      this.vertices[this.vertices.length - 1].x * this.vertices[0].y -
+      this.vertices[this.vertices.length - 1].y * this.vertices[0].x;
+    areaSum = Math.abs(areaSum);
+    area = areaSum / 2;
+    this.inertia = ((1 / this.invMass) * area) / 12;
+    this.inertia = 1 / this.inertia;
+  }
 };
 
 /**
@@ -1155,7 +1197,7 @@ Rectangle.prototype.rotate = function(angle) {
   return this;
 };
 /**
- * Updates the inertia based on the Circle's mass.
+ * Updates the inertia based on the Rectangle's mass.
  * Should only be run in the constructor or when updateMass is called
  */
 Rectangle.prototype.updateInertia = function() {
@@ -1495,6 +1537,129 @@ Circle.prototype.collidedCircCirc = function(c1, c2, collisionInfo) {
     }
   }
   return true;
+};
+
+function polygonConfiguration() {
+  this.min;
+  this.max;
+  this.minIndex;
+  this.maxIndex;
+  this.collisionType = [];
+}
+// Geometric Tools For Computer Graphics pg 269
+Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
+  var status = false;
+  if (otherShape.type === "Polygon") {
+    status = this.collidedPolyPoly(otherShape, collisionInfo);
+  }
+  return status;
+};
+
+Polygon.prototype.collidedPolyPoly = function(otherPolygon, collisionInfo) {
+  var interval1, interval2, d;
+  for (let i = 0; i < this.faceNormals.length; i++) {
+    d = this.faceNormals[i];
+    interval1 = this.computeInterval(this, d);
+    interval2 = this.computeInterval(otherPolygon, d);
+    if (interval2.max < interval1.min || interval1.max < interval2.min) {
+      this.lineColor = null;
+      return false;
+    }
+  }
+
+  for (let i = 0; i < otherPolygon.faceNormals.length; i++) {
+    d = otherPolygon.faceNormals[i];
+    interval1 = this.computeInterval(this, d);
+    interval2 = this.computeInterval(otherPolygon, d);
+    if (interval2.max < interval1.min || interval1.max < interval2.min) {
+      this.lineColor = null;
+      return false;
+    }
+  }
+  var depth;
+  this.lineColor = "0xfc030f";
+  if (interval1.min < interval2.min) {
+    depth = interval2.min - interval1.max;
+  } else {
+    depth = interval1.min - interval2.max;
+  }
+  //console.log(interval1);
+  console.log(d);
+  collisionInfo.setInfo(0, d, interval1.start);
+
+  return true;
+};
+
+Polygon.prototype.collidedPolyRect = function() {};
+
+Polygon.prototype.collidedPolyCirc = function() {};
+
+Polygon.prototype.computeInterval = function(polygon, normal) {
+  var min = 999999;
+  var max = -99999;
+  var current;
+  var interval = { min: 0, max: 0 };
+
+  var dotProduct = normal.dot(polygon.vertices[0]);
+
+  for (let i = 0; i < polygon.vertices.length; i++) {
+    current = normal.dot(polygon.vertices[i]); //normal.dot(polygon.vertices[i]);
+    //console.log(current);
+    if (current < min) {
+      min = interval.min = current;
+      interval.start = polygon.vertices[i];
+    }
+    if (current > max) {
+      //console.log(max);
+      max = interval.max = current;
+      interval.start = polygon.vertices[i];
+    }
+  }
+  //console.log(interval);
+  return interval;
+};
+
+// Geometrics Tools for Computer Graphics pg.275
+Polygon.prototype.notIntersecting = function(
+  tMax,
+  speed,
+  interval1,
+  interval2,
+  tFirst,
+  tLast
+) {
+  var t;
+  if (interval2.max < interval1.min) {
+    // other shape initially on left of interval
+    if (speed <= 0) return true; // objects are moving apart, no intersection
+    t = (interval1.min - interval2.max) / speed;
+    if (t > tFirst) tFirst = t;
+    if (tFirst > tMax) return true;
+    t = (interval1.max - interval2.min) / speed;
+    if (t < tLast) tLast = t;
+    if (tFirst > tLast) return true;
+  } else if (interval1.max < interval2.min) {
+    // other shape initially on right of interval
+    if (speed >= 0) return true; // objects are moving apart, no intersection
+    t = (interval1.max - interval2.min) / speed;
+    if (t > tFirst) tFirst = t;
+    if (tFirst > tMax) return true;
+    t = (interval1.min - interval2.max) / speed;
+    if (t < tLast) tLast = t;
+    if (tFirst > tLast) return true;
+  } else {
+    // intervals are overlapping
+    if (speed > 0) {
+      t = (interval1.max - interval2.min) / speed;
+      if (t < tLast) tLast = t;
+      if (tFirst > tLast) return true;
+    } else if (speed < 0) {
+      t = (interval1.min - interval2.max) / speed;
+      if (t < tLast) tLast = t;
+      if (tFirst > tLast) return true;
+    }
+  }
+  return false;
 };
 
 var constraintIndex = new Indexer();

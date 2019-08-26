@@ -1,5 +1,3 @@
-//var renderIndex = new Indexer();
-
 function PixiRender(width, height, theme, scale) {
   var self = this;
 
@@ -19,7 +17,7 @@ function PixiRender(width, height, theme, scale) {
 
   this.lineContainer = new PIXI.Container();
   this.loader = new PIXI.Loader();
-  this.isLoaded = false;
+
   var theme = theme || "stone";
   var sprites = {};
   var rectPNG;
@@ -62,14 +60,9 @@ function PixiRender(width, height, theme, scale) {
       case "space":
         sprites.rectTexture = self.loader.resources["ship"].texture;
         sprites.circleTexture = self.loader.resources["asteroid1"].texture;
-        // sprites.explosionSheet = self.loader.resources["explosion"].sprites;
-        // sprites.explosion = new PIXI.AnimatedSprite(
-        //   sprites.explosionSheet.animations["explosion"]
-        // );
         break;
       case "pool":
         sprites.rectTexture = self.loader.resources["wood"].texture;
-
         break;
       default:
         break;
@@ -79,57 +72,55 @@ function PixiRender(width, height, theme, scale) {
   this.app.stage.addChild(this.bodyContainer);
   this.app.stage.addChild(this.lineContainer);
 
-  this.loader.onComplete.add(() => {
-    this.isLoaded = true;
-  });
+  this.addRectangle = function(rect) {
+    renderBodies[rect.bodyID] = new PIXI.Sprite(
+      rect.render.texture || sprites.rectTexture
+    );
+    renderBodies[rect.bodyID].anchor.x = renderBodies[
+      rect.bodyID
+    ].anchor.y = 0.5;
+    this.bodyContainer.addChild(renderBodies[rect.bodyID]);
+    renderBodies[rect.bodyID].renderUpdate = this.updateBody;
+    return renderBodies[rect.bodyID];
+  };
 
-  this.addRectangle = function(rect) {};
+  this.addCircle = function(circ) {
+    renderBodies[circ.bodyID] = new PIXI.Sprite(
+      circ.render.texture || sprites.circleTexture
+    );
+    renderBodies[circ.bodyID].anchor.x = renderBodies[
+      circ.bodyID
+    ].anchor.y = 0.5;
+    renderBodies[circ.bodyID].height = renderBodies[circ.bodyID].width =
+      circ.radius * 2;
+    this.bodyContainer.addChild(renderBodies[circ.bodyID]);
+    renderBodies[circ.bodyID].renderUpdate = this.updateBody;
+    return renderBodies[circ.bodyID];
+  };
 
-  this.addSprite = function(body) {
-    var renderBody = renderBodies[body.bodyID];
-    if (!renderBody) {
-      console.log("here");
-      if (body.type === "Rectangle") {
-        renderBodies[body.bodyID] = new PIXI.Sprite(
-          body.render.texture || sprites.rectTexture
-        );
-        renderBodies[body.bodyID].anchor.x = renderBodies[
-          body.bodyID
-        ].anchor.y = 0.5;
-        renderBody = renderBodies[body.bodyID];
-        this.bodyContainer.addChild(renderBody);
-      } else if (body.type === "Circle") {
-        renderBodies[body.bodyID] = new PIXI.Sprite(
-          body.render.texture || sprites.circleTexture
-        );
-        renderBody = renderBodies[body.bodyID];
-
-        renderBody.anchor.x = renderBody.anchor.y = 0.5;
-        renderBody.height = renderBody.width = body.radius * 2;
-        this.bodyContainer.addChild(renderBody);
-      }
+  this.addPolygon = function(polygon) {
+    var polygonGraphics = renderBodies[polygon.bodyID];
+    if (!polygonGraphics) {
+      renderBodies[polygon.bodyID] = new PIXI.Graphics();
+      this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
+      polygonGraphics = renderBodies[polygon.bodyID];
     }
-    renderBody.position.x = body.center.x;
-    renderBody.position.y = body.center.y;
-    renderBody.width = body.radius ? body.radius * 2 : body.width;
-    renderBody.height = body.radius ? body.radius * 2 : body.height;
-    renderBody.rotation = body.angle;
-    //   r.position.x = body.center.x;
-    //   r.position.y = body.center.y;
-    //   r.width = body.width;
-    //   r.height = body.height;
-    //   r.rotation = body.angle;
-    //   renderBodies[body.bodyID] = r;
-    //   //body.renderIndex = this.app.stage.getChildIndex(r);
-    // }
-    //
-    //
-    //   c.position.x = body.center.x;
-    //   c.position.y = body.center.y;
-    //   c.rotation = body.angle;
-    //   renderBodies[body.bodyID] = c;
-    //   //body.renderIndex = this.app.stage.getChildIndex(c);
-    // }
+
+    renderBodies[polygon.bodyID].renderUpdate = this.updatePolygon;
+    return renderBodies[polygon.bodyID];
+  };
+
+  this.addShape = function(body) {
+    switch (body.type) {
+      case "Rectangle":
+        return this.addRectangle(body);
+      case "Circle":
+        return this.addCircle(body);
+      case "Polygon":
+        return this.addPolygon(body);
+      default:
+        break;
+    }
   };
 
   this.addSprites = function(bodies) {
@@ -151,95 +142,79 @@ function PixiRender(width, height, theme, scale) {
 
   this.drawLine = function(v1, v2) {
     var graphics = new PIXI.Graphics();
+    graphics.clear();
 
     this.lineContainer.addChild(graphics);
 
-    graphics.clear();
-    graphics.lineStyle(1, 0x000000, 1);
+    graphics.lineStyle(1 / scale, 0x000000, 1);
     graphics.moveTo(v1.x, v1.y);
     graphics.lineTo(v2.x, v2.y);
   };
 
-  this.drawPolygon = function(polygon) {
-    var polygonGraphics = renderBodies[polygon.bodyID];
-    if (!polygonGraphics) {
-      renderBodies[polygon.bodyID] = new PIXI.Graphics();
-      this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
-      polygonGraphics = renderBodies[polygon.bodyID];
-    }
-    polygonGraphics.clear();
-    polygonGraphics.lineStyle(1);
-    //polygonGraphics.beginFill(0x3500fa, 1);
-
-    polygonGraphics.drawPolygon(polygon.verticesToPath());
-    //polygonGraphics.endFill();
-  };
-
   this.renderEdge = function(v1, v2) {};
 
-  this.create = function(engine) {
-    if (engine.hasChanged) {
-      this.clear();
-      engine.hasChanged = false;
-    }
+  this.updateBody = function(body) {
+    var renderBody = renderBodies[body.bodyID];
+    renderBody.position.x = body.center.x;
+    renderBody.position.y = body.center.y;
+    renderBody.width = body.radius ? body.radius * 2 : body.width;
+    renderBody.height = body.radius ? body.radius * 2 : body.height;
+    renderBody.rotation = body.angle;
+  };
 
-    var bodies = engine.allBodies;
+  this.updatePolygon = function(polygon) {
+    var polygonGraphics = renderBodies[polygon.bodyID];
+    polygonGraphics.clear();
+    polygonGraphics.lineStyle(1 / scale, polygon.lineColor || 0x03f8fc);
+    polygonGraphics.lineColor;
+    //polygonGraphics.beginFill(0x3500fa, 1);
+    polygonGraphics.drawPolygon(polygon.verticesToPath());
+    //polygonGraphics.endFill();
 
-    for (let i = 0; i < bodies.length; i++) {
-      if (bodies[i].type === "Rectangle" || bodies[i].type === "Circle") {
-        this.addSprites(bodies[i]);
-      } else if (bodies[i].type === "Polygon") {
-        this.drawPolygon(bodies[i]);
-      }
+    var midpoint;
+    for (let i = 0; i < polygon.vertices.length - 1; i++) {
+      //render.drawLine(this.vertices[i], this.vertices[i + 1]);
+      midpoint = polygon.vertices[i].midpoint(polygon.vertices[i + 1]);
+      self.drawLine(
+        midpoint,
+        midpoint.add(polygon.faceNormals[i].scale(10 / scale))
+      );
     }
+    //render.drawLine(polygon.vertices[0], polygon.vertices[polygon.vertices.length - 1]);
+    midpoint = polygon.vertices[0].midpoint(
+      polygon.vertices[polygon.vertices.length - 1]
+    );
+    self.drawLine(
+      midpoint,
+      midpoint.add(
+        polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)
+      )
+    );
   };
 
   this.clear = function() {
     renderBodies = {};
     this.bodyContainer.removeChildren();
     this.lineContainer.removeChildren();
-    // for (let i = this.bodyContainer.children.length - 1; i >= 0; i--) {
-    //   this.bodyContainer.removeChild(this.bodyContainer.children[i]);
-    // }
-    // for (let i = this.lineContainer.children.length - 1; i >= 0; i--) {
-    //   this.lineContainer.removeChild(this.lineContainer.children[i]);
-    // }
   };
 
   this.update = function(engine) {
-    this.create(engine);
-    //   var engineBodies = engine.allBodies;
-    //   for (let i = 0; i < this.bodyContainer.children.length; i++) {
-    //     var engineBody = engineBodies[i];
-    //     var renderBody = renderBodies[engineBody.bodyID];
-    //
-    //     var engineBodyPos = {
-    //       x: engineBody.center.x,
-    //       y: engineBody.center.y,
-    //       angle: engineBody.angle,
-    //       width: engineBody.width,
-    //       height: engineBody.height,
-    //       radius: engineBody.radius * 2
-    //     };
-    //     renderBody.position.x = engineBodyPos.x;
-    //     renderBody.position.y = engineBodyPos.y;
-    //     renderBody.rotation = engineBodyPos.angle;
-    //     renderBody.width = engineBody.radius
-    //       ? engineBodyPos.radius
-    //       : engineBodyPos.width;
-    //     renderBody.height = engineBodyPos.radius
-    //       ? engineBodyPos.radius
-    //       : engineBodyPos.height;
-    //   }
-    //
-    //   engine.allConstraints.forEach(function(constraint) {
-    //     self.drawLine(
-    //       constraint.bodyA.center.x,
-    //       constraint.bodyA.center.y,
-    //       constraint.bodyB.center.x,
-    //       constraint.bodyB.center.y
-    //     );
-    //     self.constraintContainer.addChild(graphics);
-    //   });
+    //if (engine.hasChanged) {
+    this.clear();
+    engine.hasChanged = false;
+    //}
+
+    var bodies = engine.allBodies;
+    var renderBody;
+
+    for (let i = 0; i < bodies.length; i++) {
+      //bodies[i].draw(this);
+      renderBody = renderBodies[bodies[i].bodyID];
+      if (!renderBody) {
+        renderBody = this.addShape(bodies[i]);
+      }
+      renderBody.renderUpdate(bodies[i]);
+      //this.updateBody(bodies[i]);
+    }
   };
 }

@@ -122,7 +122,7 @@ function Engine() {
         value.call();
       });
     }
-    //Update renderer with new position and redraw
+    // Update renderer with new position and redraw
     if (render) {
       render.update(this);
     }
@@ -130,10 +130,10 @@ function Engine() {
     while (self.lagTime >= self.kMPF) {
       self.lagTime -= self.kMPF;
 
-      //Maintain any contraints in the Engine's Constraints array
+      // Maintain any contraints in the Engine's Constraints array
       this.physics.maintainConstraints(self);
 
-      // Detect and resolve collisions between bodies
+      // Detect and resolve collisions between bodies.
       // collisionInfo is returned by the physics and
       // stored for use in events
       this.collisionInfo = this.physics.collision(this);

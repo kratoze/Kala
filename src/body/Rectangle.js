@@ -90,7 +90,7 @@ Rectangle.prototype.rotate = function(angle) {
   return this;
 };
 /**
- * Updates the inertia based on the Circle's mass.
+ * Updates the inertia based on the Rectangle's mass.
  * Should only be run in the constructor or when updateMass is called
  */
 Rectangle.prototype.updateInertia = function() {

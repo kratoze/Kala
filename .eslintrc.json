@@ -17,7 +17,8 @@
     "Constraint": "writable",
     "Common": "writable",
     "PIXI": "readonly",
-    "Factory": "writable"
+    "Factory": "writable",
+    "Polygon": "writable"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

@@ -17,6 +17,7 @@ var kalaFiles = [
   "./src/body/Circle.js",
   "./src/body/RectangleCollision.js",
   "./src/body/CircleCollision.js",
+  "./src/body/PolygonCollision.js",
   "./src/constraint/Constraint.js",
   "./src/constraint/DistanceConstraint.js",
   "./src/constraint/NaiveDistance.js",
