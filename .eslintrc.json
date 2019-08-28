@@ -18,7 +18,9 @@
     "Common": "writable",
     "PIXI": "readonly",
     "Factory": "writable",
-    "Polygon": "writable"
+    "Polygon": "writable",
+    "CollisionInfo": "writable",
+    "SupportStruct": "writable"
   },
   "parserOptions": {
     "ecmaVersion": 2018,

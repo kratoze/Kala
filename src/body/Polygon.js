@@ -42,7 +42,7 @@ Polygon.prototype.move = function(v) {
  * @param  {number} angle description
  */
 Polygon.prototype.rotate = function(angle) {
-  angle = -angle;
+  //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
   for (let i = 0; i < this.vertices.length; i++) {
@@ -81,7 +81,11 @@ Polygon.prototype.getFaceNormals = function() {
   var tmpFNormals = [];
 
   for (let i = 0; i < this.edges.length; i++) {
-    //tmpFNormals[i] = Vec2(this.edges[i].y, -this.edges[i].x);
+    // perpendicular normals
+    // tmpFNormals[i] = Vec2(this.edges[i].y, -this.edges[i].x);
+    // tmpFNormals[i] = tmpFNormals[i].normalize();
+
+    // parallel normals
     tmpFNormals[i] = this.edges[i].normalize();
   }
   return tmpFNormals;

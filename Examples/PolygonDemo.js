@@ -30,25 +30,26 @@ var squarePolygonPoints2 = [
   Vec2(500 / scale, 200 / scale),
   Vec2(0 / scale, 200 / scale)
 ];
-var triangle = new Polygon(triangleVertices, 0.2, 0.2, 0.2);
+var triangle = new Polygon(triangleVertices, 0.2, 1, 0.2);
 var triangle2 = new Polygon(triangleVertices2, 0, 1, 1);
 
-var squarePolygon = new Polygon(squarePolygonPoints, 0, 1, 1);
+var squarePolygon = new Polygon(squarePolygonPoints, 1, 1, 0.1);
 var squarePolygon2 = new Polygon(squarePolygonPoints2, 0, 0.2, 0.2);
 
 triangle.move(Vec2(100 / scale, 0));
 //triangle.velocity = Vec2(0, 20);
 //triangle.velocity = Vec2(0, 200);
 //triangle.rotate(0.9);
-engine.add(triangle);
+// engine.add(triangle);
 // engine.add(triangle2);
 //engine.add(squarePolygon);
 // engine.add(squarePolygon2);
 
 squarePolygon2.move(Vec2(0, 400 / scale));
-
+squarePolygon.move(Vec2(8, 0));
+// squarePolygon.rotate(0.7);
 //squarePolygon2.rotate(0.7);
-// engine.add(squarePolygon);
+engine.add(squarePolygon);
 engine.add(squarePolygon2);
 
 //squarePolygon2.velocity = Vec2(0, 20);

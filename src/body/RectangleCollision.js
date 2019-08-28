@@ -8,11 +8,6 @@ Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   return status;
 };
 
-var SupportStruct = function() {
-  this.supportPoint = null;
-  this.supportPointDist = 0;
-};
-
 var tmpSupport = new SupportStruct();
 
 Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
@@ -33,10 +28,7 @@ Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
   }
 };
 
-Rectangle.prototype.findAxisLeastPenetration = function(
-  otherRect,
-  collisionInfo
-) {
+Rectangle.prototype.findAxisLeastPenetration = function(otherRect, collisionInfo) {
   var n;
   var supportPoint;
   var bestDistance = 999999;
@@ -67,11 +59,7 @@ Rectangle.prototype.findAxisLeastPenetration = function(
   if (hasSupport) {
     //all four direction have support point
     var bestVec = this.faceNormal[bestIndex].scale(bestDistance);
-    collisionInfo.setInfo(
-      bestDistance,
-      this.faceNormal[bestIndex],
-      supportPoint.add(bestVec)
-    );
+    collisionInfo.setInfo(bestDistance, this.faceNormal[bestIndex], supportPoint.add(bestVec));
   }
   return hasSupport;
 };
@@ -89,20 +77,14 @@ Rectangle.prototype.collidedRectRect = function(r1, r2, collisionInfo) {
     if (status2) {
       //  choose the shorter normal as the normal
       if (collisionInfoR1.getDepth() < collisionInfoR2.getDepth()) {
-        var depthVec = collisionInfoR1
-          .getNormal()
-          .scale(collisionInfoR1.getDepth());
+        var depthVec = collisionInfoR1.getNormal().scale(collisionInfoR1.getDepth());
         collisionInfo.setInfo(
           collisionInfoR1.getDepth(),
           collisionInfoR1.getNormal(),
           collisionInfoR1.start.subtract(depthVec)
         );
       } else {
-        collisionInfo.setInfo(
-          collisionInfoR2.getDepth(),
-          collisionInfoR2.getNormal().scale(-1),
-          collisionInfoR2.start
-        );
+        collisionInfo.setInfo(collisionInfoR2.getDepth(), collisionInfoR2.getNormal().scale(-1), collisionInfoR2.start);
       }
     }
   }
@@ -141,9 +123,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
     // v1 is from left vertex of face to center of Circle
     // v2 is from left vertex of face to right vertex of face
     var v1 = circ2Pos.subtract(this.vertex[nearestEdge]);
-    var v2 = this.vertex[(nearestEdge + 1) % 4].subtract(
-      this.vertex[nearestEdge]
-    );
+    var v2 = this.vertex[(nearestEdge + 1) % 4].subtract(this.vertex[nearestEdge]);
 
     var dot = v1.dot(v2);
     if (dot < 0) {
@@ -155,11 +135,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
       }
       var normal = v1.normalize();
       var radiusVec = normal.scale(-otherCir.radius);
-      collisionInfo.setInfo(
-        otherCir.radius - dis,
-        normal,
-        circ2Pos.add(radiusVec)
-      );
+      collisionInfo.setInfo(otherCir.radius - dis, normal, circ2Pos.add(radiusVec));
     } else {
       // Not in region R1
 
@@ -179,22 +155,14 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
         }
         var normal = v1.normalize();
         var radiusVec = normal.scale(-otherCir.radius);
-        collisionInfo.setInfo(
-          otherCir.radius - dis,
-          normal,
-          circ2Pos.add(radiusVec)
-        );
+        collisionInfo.setInfo(otherCir.radius - dis, normal, circ2Pos.add(radiusVec));
       } else {
         // Not in Region R2
         // Step B3: R3
         // the center of circle is in face region of face[nearestEdge]
         if (bestDistance < otherCir.radius) {
           var radiusVec = this.faceNormal[nearestEdge].scale(otherCir.radius);
-          collisionInfo.setInfo(
-            otherCir.radius - bestDistance,
-            this.faceNormal[nearestEdge],
-            circ2Pos.subtract(radiusVec)
-          );
+          collisionInfo.setInfo(otherCir.radius - bestDistance, this.faceNormal[nearestEdge], circ2Pos.subtract(radiusVec));
         } else {
           return false;
         }
@@ -203,11 +171,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
   } else {
     // Step C: If center is inside
     var radiusVec = this.faceNormal[nearestEdge].scale(otherCir.radius);
-    collisionInfo.setInfo(
-      otherCir.radius - bestDistance,
-      this.faceNormal[nearestEdge],
-      circ2Pos.subtract(radiusVec)
-    );
+    collisionInfo.setInfo(otherCir.radius - bestDistance, this.faceNormal[nearestEdge], circ2Pos.subtract(radiusVec));
   }
   return true;
 };

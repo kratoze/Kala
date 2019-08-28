@@ -636,6 +636,7 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
+    console.log(impulse);
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;
@@ -686,6 +687,11 @@ Events.prototype.addCustomEvent = function(event) {
 
 Events.prototype.addCollisionEvent = function(event) {
   this.collisionEvents[event.name] = event;
+};
+
+var SupportStruct = function() {
+  this.supportPoint = null;
+  this.supportPointDist = 0;
 };
 
 var bodyIndex = new Indexer();
@@ -939,7 +945,7 @@ Polygon.prototype.move = function(v) {
  * @param  {number} angle description
  */
 Polygon.prototype.rotate = function(angle) {
-  angle = -angle;
+  //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
   for (let i = 0; i < this.vertices.length; i++) {
@@ -978,7 +984,11 @@ Polygon.prototype.getFaceNormals = function() {
   var tmpFNormals = [];
 
   for (let i = 0; i < this.edges.length; i++) {
-    //tmpFNormals[i] = Vec2(this.edges[i].y, -this.edges[i].x);
+    // perpendicular normals
+    // tmpFNormals[i] = Vec2(this.edges[i].y, -this.edges[i].x);
+    // tmpFNormals[i] = tmpFNormals[i].normalize();
+
+    // parallel normals
     tmpFNormals[i] = this.edges[i].normalize();
   }
   return tmpFNormals;
@@ -1277,11 +1287,6 @@ Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   return status;
 };
 
-var SupportStruct = function() {
-  this.supportPoint = null;
-  this.supportPointDist = 0;
-};
-
 var tmpSupport = new SupportStruct();
 
 Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
@@ -1302,10 +1307,7 @@ Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
   }
 };
 
-Rectangle.prototype.findAxisLeastPenetration = function(
-  otherRect,
-  collisionInfo
-) {
+Rectangle.prototype.findAxisLeastPenetration = function(otherRect, collisionInfo) {
   var n;
   var supportPoint;
   var bestDistance = 999999;
@@ -1336,11 +1338,7 @@ Rectangle.prototype.findAxisLeastPenetration = function(
   if (hasSupport) {
     //all four direction have support point
     var bestVec = this.faceNormal[bestIndex].scale(bestDistance);
-    collisionInfo.setInfo(
-      bestDistance,
-      this.faceNormal[bestIndex],
-      supportPoint.add(bestVec)
-    );
+    collisionInfo.setInfo(bestDistance, this.faceNormal[bestIndex], supportPoint.add(bestVec));
   }
   return hasSupport;
 };
@@ -1358,20 +1356,14 @@ Rectangle.prototype.collidedRectRect = function(r1, r2, collisionInfo) {
     if (status2) {
       //  choose the shorter normal as the normal
       if (collisionInfoR1.getDepth() < collisionInfoR2.getDepth()) {
-        var depthVec = collisionInfoR1
-          .getNormal()
-          .scale(collisionInfoR1.getDepth());
+        var depthVec = collisionInfoR1.getNormal().scale(collisionInfoR1.getDepth());
         collisionInfo.setInfo(
           collisionInfoR1.getDepth(),
           collisionInfoR1.getNormal(),
           collisionInfoR1.start.subtract(depthVec)
         );
       } else {
-        collisionInfo.setInfo(
-          collisionInfoR2.getDepth(),
-          collisionInfoR2.getNormal().scale(-1),
-          collisionInfoR2.start
-        );
+        collisionInfo.setInfo(collisionInfoR2.getDepth(), collisionInfoR2.getNormal().scale(-1), collisionInfoR2.start);
       }
     }
   }
@@ -1410,9 +1402,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
     // v1 is from left vertex of face to center of Circle
     // v2 is from left vertex of face to right vertex of face
     var v1 = circ2Pos.subtract(this.vertex[nearestEdge]);
-    var v2 = this.vertex[(nearestEdge + 1) % 4].subtract(
-      this.vertex[nearestEdge]
-    );
+    var v2 = this.vertex[(nearestEdge + 1) % 4].subtract(this.vertex[nearestEdge]);
 
     var dot = v1.dot(v2);
     if (dot < 0) {
@@ -1424,11 +1414,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
       }
       var normal = v1.normalize();
       var radiusVec = normal.scale(-otherCir.radius);
-      collisionInfo.setInfo(
-        otherCir.radius - dis,
-        normal,
-        circ2Pos.add(radiusVec)
-      );
+      collisionInfo.setInfo(otherCir.radius - dis, normal, circ2Pos.add(radiusVec));
     } else {
       // Not in region R1
 
@@ -1448,22 +1434,14 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
         }
         var normal = v1.normalize();
         var radiusVec = normal.scale(-otherCir.radius);
-        collisionInfo.setInfo(
-          otherCir.radius - dis,
-          normal,
-          circ2Pos.add(radiusVec)
-        );
+        collisionInfo.setInfo(otherCir.radius - dis, normal, circ2Pos.add(radiusVec));
       } else {
         // Not in Region R2
         // Step B3: R3
         // the center of circle is in face region of face[nearestEdge]
         if (bestDistance < otherCir.radius) {
           var radiusVec = this.faceNormal[nearestEdge].scale(otherCir.radius);
-          collisionInfo.setInfo(
-            otherCir.radius - bestDistance,
-            this.faceNormal[nearestEdge],
-            circ2Pos.subtract(radiusVec)
-          );
+          collisionInfo.setInfo(otherCir.radius - bestDistance, this.faceNormal[nearestEdge], circ2Pos.subtract(radiusVec));
         } else {
           return false;
         }
@@ -1472,11 +1450,7 @@ Rectangle.prototype.collidedRectCirc = function(otherCir, collisionInfo) {
   } else {
     // Step C: If center is inside
     var radiusVec = this.faceNormal[nearestEdge].scale(otherCir.radius);
-    collisionInfo.setInfo(
-      otherCir.radius - bestDistance,
-      this.faceNormal[nearestEdge],
-      circ2Pos.subtract(radiusVec)
-    );
+    collisionInfo.setInfo(otherCir.radius - bestDistance, this.faceNormal[nearestEdge], circ2Pos.subtract(radiusVec));
   }
   return true;
 };
@@ -1543,18 +1517,98 @@ Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   return status;
 };
 
+Polygon.prototype.computeInterval = function(polygon, normal, polyConfig, collisionInfo) {
+  var min = 999999;
+  var max = -99999;
+  var current;
+  var interval = { min: 0, max: 0 };
+  var bestVec;
+  var dotProduct = normal.dot(polygon.vertices[0]);
+
+  for (let i = 0; i < polygon.vertices.length; i++) {
+    current = polygon.vertices[i].dot(normal); //normal.dot(polygon.vertices[i]);
+    if (current < min) {
+      min = interval.min = current;
+      polyConfig.min = current;
+      polyConfig.minIndex = i;
+      polyConfig.normal = normal;
+    }
+    if (current > max) {
+      max = interval.max = current;
+      polyConfig.max = current;
+      polyConfig.maxIndex = i;
+      polyConfig.normal = normal;
+      bestVec = normal.scale(max);
+      //collisionInfo.setInfo(max, normal, polygon.vertices[i].add(bestVec));
+    }
+  }
+  return interval;
+};
+var tmpSupport = new SupportStruct();
+
+Polygon.prototype.findSupportPoint = function(dir) {
+  var vertex;
+  var projection;
+
+  tmpSupport.supportPointDist = -9999999;
+  tmpSupport.supportPoint = null;
+
+  for (let i = 0; i < this.vertices.length; i++) {
+    vertex = this.vertices[i];
+    projection = vertex.dot(dir);
+    if (projection > tmpSupport.supportPointDist) {
+      tmpSupport.supportPoint = vertex;
+      tmpSupport.supportPointDist = projection;
+    }
+  }
+};
+
+Polygon.prototype.findAxisLeastPenetration = function(otherPolygon, collisionInfo) {
+  var n;
+  var supportPoint;
+  var bestDistance = 999999;
+  var bestIndex = null;
+
+  var hasSupport = true;
+  var i = 0;
+
+  while (hasSupport && i < this.faceNormals.length) {
+    n = this.faceNormals[i];
+
+    var dir = n;
+    var ptOnEdge = this.vertices[i];
+
+    otherPolygon.findSupportPoint(dir, ptOnEdge);
+    hasSupport = tmpSupport.supportPoint !== null;
+    if (hasSupport && tmpSupport.supportPointDist < bestDistance) {
+      bestDistance = tmpSupport.supportPointDist;
+      bestIndex = i;
+      supportPoint = tmpSupport.supportPoint;
+    }
+    i++;
+  }
+  if (hasSupport) {
+    var bestVec = this.faceNormals[bestIndex].scale(bestDistance);
+    collisionInfo.setInfo(bestDistance, this.faceNormals[bestIndex], supportPoint.add(bestVec));
+  }
+  return hasSupport;
+};
+
 var collisionInfoR1 = new CollisionInfo();
 var collisionInfoR2 = new CollisionInfo();
 
 Polygon.prototype.collidedPolyPoly = function(otherPolygon, collisionInfo) {
+  var status1 = false;
+  var status2 = false;
+
   var polyConfig1 = new polygonConfiguration();
   var polyConfig2 = new polygonConfiguration();
 
   var interval1, interval2, d;
   for (let i = 0; i < this.faceNormals.length; i++) {
     d = this.faceNormals[i];
-    interval1 = this.computeInterval(this, d, polyConfig1);
-    interval2 = this.computeInterval(otherPolygon, d, polyConfig2);
+    interval1 = this.computeInterval(this, d, polyConfig1, collisionInfoR1);
+    interval2 = this.computeInterval(otherPolygon, d, polyConfig2, collisionInfoR2);
     if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
       this.lineColor = null;
       return false;
@@ -1563,60 +1617,28 @@ Polygon.prototype.collidedPolyPoly = function(otherPolygon, collisionInfo) {
 
   for (let i = 0; i < otherPolygon.faceNormals.length; i++) {
     d = otherPolygon.faceNormals[i];
-    interval1 = this.computeInterval(this, d, polyConfig1);
-    interval2 = this.computeInterval(otherPolygon, d, polyConfig2);
+    interval1 = this.computeInterval(this, d, polyConfig1, collisionInfoR1);
+    interval2 = this.computeInterval(otherPolygon, d, polyConfig2, collisionInfoR2);
     if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
       this.lineColor = null;
       return false;
     }
   }
-  this.lineColor = "0xfc030f";
+  //this.lineColor = "0xfc030f";
+  var depth1 = interval1.max - interval2.min;
+  var depth2 = interval2.max - interval1.min;
 
-  collisionInfo.setInfo(polyConfig1.min / polyConfig1.min, polyConfig1.normal, this.vertices[polyConfig1.maxIndex]);
-
-  // console.log(polyConfig1.min - polyConfig1.min / polyConfig1.min);
-  // collisionInfo.setInfo(
-  //   this.vertices[polyConfig1.maxIndex].subtract(Vec2(0, 25)).dot(polyConfig1.normal),
-  //   polyConfig1.normal,
-  //   this.vertices[polyConfig1.maxIndex]
-  // );
-
-  //console.log("max: " + polyConfig1.max + " min: " + polyConfig2.min);
+  if (depth1 < depth2) {
+    collisionInfo.setInfo(depth1, polyConfig1.normal, this.vertices[polyConfig1.minIndex]);
+  } else {
+    collisionInfo.setInfo(depth2, polyConfig1.normal, this.vertices[polyConfig1.minIndex]);
+  }
   return true;
 };
 
 Polygon.prototype.collidedPolyRect = function() {};
 
 Polygon.prototype.collidedPolyCirc = function() {};
-
-Polygon.prototype.computeInterval = function(polygon, normal, polyConfig) {
-  var min = 999999;
-  var max = -99999;
-  var current;
-  var interval = { min: 0, max: 0 };
-
-  var dotProduct = normal.dot(polygon.vertices[0]);
-
-  for (let i = 0; i < polygon.vertices.length; i++) {
-    current = polygon.vertices[i].dot(normal); //normal.dot(polygon.vertices[i]);
-    //console.log(current);
-    if (current < min) {
-      min = interval.min = current;
-      polyConfig.min = current;
-      polyConfig.minIndex = i;
-      polyConfig.normal = normal;
-      //console.log(normal);
-    }
-    if (current > max) {
-      max = interval.max = current;
-      polyConfig.max = current;
-      polyConfig.maxIndex = i;
-      //polyConfig.normal = normal;
-    }
-  }
-  //console.log(interval);
-  return interval;
-};
 
 // Geometrics Tools for Computer Graphics pg.275
 Polygon.prototype.notIntersecting = function(tMax, speed, interval1, interval2, tFirst, tLast) {
@@ -1652,71 +1674,6 @@ Polygon.prototype.notIntersecting = function(tMax, speed, interval1, interval2, 
     }
   }
   return false;
-};
-
-//SHIT BELOW
-var SupportStruct = function() {
-  this.supportPoint = null;
-  this.supportPointDist = 0;
-};
-
-var tmpSupport = new SupportStruct();
-
-Polygon.prototype.findSupportPoint = function(dir, ptOnEdge) {
-  var vToEdge;
-  var projection;
-  tmpSupport.supportPointDist = -9999999;
-  tmpSupport.supportPoint = null;
-  //check each vector of other object
-  for (var i = 0; i < this.vertices.length; i++) {
-    vToEdge = this.vertices[i].subtract(ptOnEdge);
-    projection = vToEdge.dot(dir);
-    //find the longest distance with certain edge
-    //dir is -n direction so the distance should be positive
-    if (projection > 0 && projection > tmpSupport.supportPointDist) {
-      tmpSupport.supportPoint = this.vertices[i];
-      tmpSupport.supportPointDist = projection;
-    }
-  }
-};
-
-// DOESNT WORK
-Polygon.prototype.findAxisLeastPenetration = function(otherRect, collisionInfo) {
-  var n;
-  var supportPoint;
-  var bestDistance = 999999;
-  var bestIndex = null;
-
-  var hasSupport = true;
-  var i = 0;
-
-  while (hasSupport && i < this.faceNormals.length) {
-    //Retrieve a face from A
-    n = this.faceNormals[i];
-    // use -n as a direction and
-    // the vertex on edge i as point on edge
-    var dir = n.scale(-1);
-    var ptOnEdge = this.vertices[i];
-    // find the support on B
-    // the point has longest distance with edge i
-    otherRect.findSupportPoint(dir, ptOnEdge);
-    hasSupport = tmpSupport.supportPoint !== null;
-
-    //get the shortest support point depth
-    if (hasSupport && tmpSupport.supportPointDist < bestDistance) {
-      console.log("here");
-      bestDistance = tmpSupport.supportPointDist;
-      bestIndex = i;
-      supportPoint = tmpSupport.supportPoint;
-    }
-    i = i + 1;
-  }
-  if (hasSupport) {
-    //all four direction have support point
-    var bestVec = this.faceNormals[bestIndex].scale(bestDistance);
-    collisionInfo.setInfo(bestDistance, this.faceNormals[bestIndex], supportPoint.add(bestVec));
-  }
-  return hasSupport;
 };
 
 var constraintIndex = new Indexer();
