@@ -33,9 +33,7 @@ function PixiRender(width, height, theme, scale) {
       break;
     case "stone":
       rectPNG = "elementMetal011.png";
-      this.loader
-        .add("sheet", "imgs/spritesheet_metal.json")
-        .load(onAssetsLoaded);
+      this.loader.add("sheet", "imgs/spritesheet_metal.json").load(onAssetsLoaded);
 
       break;
     case "pool":
@@ -54,8 +52,7 @@ function PixiRender(width, height, theme, scale) {
     sprites.circleTexture = PIXI.Sprite.from("imgs/circle.png").texture;
     switch (theme) {
       case "stone":
-        sprites.rectTexture =
-          self.loader.resources["sheet"].textures["elementMetal011.png"];
+        sprites.rectTexture = self.loader.resources["sheet"].textures["elementMetal011.png"];
         break;
       case "space":
         sprites.rectTexture = self.loader.resources["ship"].texture;
@@ -73,26 +70,17 @@ function PixiRender(width, height, theme, scale) {
   this.app.stage.addChild(this.lineContainer);
 
   this.addRectangle = function(rect) {
-    renderBodies[rect.bodyID] = new PIXI.Sprite(
-      rect.render.texture || sprites.rectTexture
-    );
-    renderBodies[rect.bodyID].anchor.x = renderBodies[
-      rect.bodyID
-    ].anchor.y = 0.5;
+    renderBodies[rect.bodyID] = new PIXI.Sprite(rect.render.texture || sprites.rectTexture);
+    renderBodies[rect.bodyID].anchor.x = renderBodies[rect.bodyID].anchor.y = 0.5;
     this.bodyContainer.addChild(renderBodies[rect.bodyID]);
     renderBodies[rect.bodyID].renderUpdate = this.updateBody;
     return renderBodies[rect.bodyID];
   };
 
   this.addCircle = function(circ) {
-    renderBodies[circ.bodyID] = new PIXI.Sprite(
-      circ.render.texture || sprites.circleTexture
-    );
-    renderBodies[circ.bodyID].anchor.x = renderBodies[
-      circ.bodyID
-    ].anchor.y = 0.5;
-    renderBodies[circ.bodyID].height = renderBodies[circ.bodyID].width =
-      circ.radius * 2;
+    renderBodies[circ.bodyID] = new PIXI.Sprite(circ.render.texture || sprites.circleTexture);
+    renderBodies[circ.bodyID].anchor.x = renderBodies[circ.bodyID].anchor.y = 0.5;
+    renderBodies[circ.bodyID].height = renderBodies[circ.bodyID].width = circ.radius * 2;
     this.bodyContainer.addChild(renderBodies[circ.bodyID]);
     renderBodies[circ.bodyID].renderUpdate = this.updateBody;
     return renderBodies[circ.bodyID];
@@ -175,21 +163,11 @@ function PixiRender(width, height, theme, scale) {
     for (let i = 0; i < polygon.vertices.length - 1; i++) {
       //render.drawLine(this.vertices[i], this.vertices[i + 1]);
       midpoint = polygon.vertices[i].midpoint(polygon.vertices[i + 1]);
-      self.drawLine(
-        midpoint,
-        midpoint.add(polygon.faceNormals[i].scale(10 / scale))
-      );
+      self.drawLine(midpoint, midpoint.add(polygon.faceNormals[i].scale(10 / scale)));
     }
     //render.drawLine(polygon.vertices[0], polygon.vertices[polygon.vertices.length - 1]);
-    midpoint = polygon.vertices[0].midpoint(
-      polygon.vertices[polygon.vertices.length - 1]
-    );
-    self.drawLine(
-      midpoint,
-      midpoint.add(
-        polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)
-      )
-    );
+    midpoint = polygon.vertices[0].midpoint(polygon.vertices[polygon.vertices.length - 1]);
+    self.drawLine(midpoint, midpoint.add(polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)));
   };
 
   this.clear = function() {
@@ -208,7 +186,7 @@ function PixiRender(width, height, theme, scale) {
     var renderBody;
 
     for (let i = 0; i < bodies.length; i++) {
-      //bodies[i].draw(this);
+      bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
       if (!renderBody) {
         renderBody = this.addShape(bodies[i]);

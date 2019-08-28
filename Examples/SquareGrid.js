@@ -19,17 +19,7 @@ var bounds = [
   new Rectangle(0, height / 2, 2, height, 0, 1, 0.2)
 ];
 
-var squareGrid = factory.createSquareGrid(
-  10,
-  10,
-  2,
-  2,
-  5,
-  5,
-  0.5,
-  0.8,
-  0.00001
-);
+var squareGrid = factory.createSquareGrid(10, 10, 2, 2, 5, 5, 0.2, 0.8, 0.00001);
 //var rect = new Rectangle(10, 10, 2, 5, 0.5, 0.1, 0.2);
 render.loader.onComplete.add(() => {
   engine.add(bounds);

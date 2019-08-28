@@ -1,66 +1,50 @@
 function DistanceConstraint(bodyA, bodyB, length, stiffness) {
   Constraint.call(this, bodyA, bodyB, length, stiffness);
-  this.minLength = 0.005;
-  this.restingAngleA = this.bodyA.angle;
-  this.restingAngleB = this.bodyB.angle;
-  this.previousRelDist =
-    this.bodyB.center.subtract(this.bodyA.center).length() - this.length;
-
-  this.reducedMass = 1 / (1 / this.bodyA.invMass + 1 / this.bodyB.invMass);
-  if (!this.bodyB.invMass === 0 || this.bodyA.invMass === 0) {
-    console.log(this.bodyA.invMass);
-    this.bodyA.invMass = this.reducedMass;
-    this.bodyB.invMass = this.reducedMass;
-  }
-
   this.initialiseConstraint();
 }
 
 Common.extend(DistanceConstraint, Constraint);
 
+//TODO: Angular response and error correction (baumgarte and/or slop).
+
+/**
+ * Applies impules the constrained bodies to satisfy contraint conditions.
+ * This is called automatically for each contraint by the Physics class
+ *
+ * @param  {type} engine The engine the constraint belongs to, passed automatically
+ */
 DistanceConstraint.prototype.maintainConstraint = function(engine) {
-  var distBA = this.bodyB.center.subtract(this.bodyA.center);
-  var lengthBA = distBA.length();
-  var vectorFromBtoA = distBA.scale(1 / lengthBA);
-  var relDist = lengthBA - this.length;
-
   var impulse;
+  // get the vector between the two bodies
+  var distBA = this.bodyB.center.subtract(this.bodyA.center);
+  // find the length of the vector bettwee B and A
+  var lengthBA = distBA.length();
+  // find the difference between the length and the contraint length.
+  // improvements taken from Advanced Character Physics by Thomas Jakobsen
+  // where the difference is divided by the length to make the impulse less drastic
+  var diff = (lengthBA - this.length) / lengthBA;
 
-  var biasFactor = 0.1;
-  var slop = 0.8;
-  var slopPenetration = Math.min(relDist + slop, 0);
-  var baumgarte =
-    -(biasFactor / engine.updateIntervalInSeconds) * slopPenetration;
-
-  if (lengthBA < slop) {
-    distBA = distBA - slop;
+  if (lengthBA < this.minLength) {
+    lengthBA = this.minLength;
   }
-
-  var constraintNormal = distBA.scale(1 / lengthBA);
-
-  impulse = constraintNormal.scale(
-    relDist + baumgarte * engine.updateIntervalInSeconds
-  );
-
-  this.previousRelDist = relDist;
+  // calculate the impulse, the difference (amount to correct)
+  // scaled in the correct direction
+  impulse = distBA.scale(0.5 * diff);
+  // apply the impulses to the bodies
   this.bodyA.velocity = this.bodyA.velocity.add(
     impulse.scale(this.bodyA.invMass * this.stiffness)
   );
   this.bodyB.velocity = this.bodyB.velocity.subtract(
     impulse.scale(this.bodyB.invMass * this.stiffness)
   );
-
-  var angularImpulseA =
-    Vec2(0, 0).angleFromVector(constraintNormal) +
-    this.restingAngleA -
-    this.bodyA.angle * 0.985;
-  var angularImpulseB =
-    Vec2(0, 0).angleFromVector(constraintNormal) - this.bodyB.angle;
-
-  this.bodyA.angularVelocity += angularImpulseA * this.bodyA.inertia;
-  this.bodyB.angularVelocity -= angularImpulseB * this.bodyB.inertia;
 };
 
+/**
+ * Moves the constrained bodies so that they satisfy the constraint upon instantiation.
+ * This is a naive "warm start" implementation without which, the corrective impulses
+ * of a badly set up constraint would cause explosive jittering.
+ * Called by the Constraint's constructor.
+ */
 DistanceConstraint.prototype.initialiseConstraint = function() {
   var distBA = this.bodyB.center.subtract(this.bodyA.center);
   var lengthBA = distBA.length();

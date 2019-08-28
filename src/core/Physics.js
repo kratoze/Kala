@@ -7,44 +7,26 @@ function Physics() {
   var posCorrectionRate = 0.8;
 
   var collision = function(engine) {
-    var i, j, k;
-    var collisionInfo = new CollisionInfo();
-    for (k = 0; k < relaxationCount; k++) {
-      for (i = 0; i < engine.allBodies.length; i++) {
-        for (j = i + 1; j < engine.allBodies.length; j++) {
-          if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
-            if (
-              engine.allBodies[i].collisionTest(
-                engine.allBodies[j],
-                collisionInfo
-              )
-            ) {
-              if (
-                collisionInfo
-                  .getNormal()
-                  .dot(
-                    engine.allBodies[j].center.subtract(
-                      engine.allBodies[i].center
-                    )
-                  ) < 0
-              ) {
-                collisionInfo.changeDir();
-              }
-              if (
-                engine.allBodies[i].isSensor === true ||
-                engine.allBodies[j].isSensor === true
-              ) {
-                collisionInfo.bodyA = engine.allBodies[i];
-                collisionInfo.bodyAIndex = i;
-                collisionInfo.bodyB = engine.allBodies[j];
-                collisionInfo.bodyBIndex = j;
-                return collisionInfo;
-              } else {
-                resolveCollision(
-                  engine.allBodies[i],
-                  engine.allBodies[j],
-                  collisionInfo
-                );
+    if (engine.movement === true) {
+      var i, j, k;
+      var collisionInfo = new CollisionInfo();
+      for (k = 0; k < relaxationCount; k++) {
+        for (i = 0; i < engine.allBodies.length; i++) {
+          for (j = i + 1; j < engine.allBodies.length; j++) {
+            if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+              if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
+                if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
+                  collisionInfo.changeDir();
+                }
+                if (engine.allBodies[i].isSensor === true || engine.allBodies[j].isSensor === true) {
+                  collisionInfo.bodyA = engine.allBodies[i];
+                  collisionInfo.bodyAIndex = i;
+                  collisionInfo.bodyB = engine.allBodies[j];
+                  collisionInfo.bodyBIndex = j;
+                  return collisionInfo;
+                } else {
+                  resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
+                }
               }
             }
           }
@@ -54,16 +36,19 @@ function Physics() {
   };
 
   var maintainConstraints = function(engine) {
-    var i;
-    var collisionInfo = new CollisionInfo();
-    for (i = 0; i < engine.allConstraints.length; i++) {
-      if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
-        resolveCollision(
-          engine.allConstraints[i].bodyA,
-          engine.allConstraints[i].bodyB,
-          collisionInfo
-        );
-        //engine.allConstraints[i].updateLink();
+    if (engine.movement === true) {
+      var collisionInfo = new CollisionInfo();
+      for (let k = 0; k < relaxationCount; k++) {
+        for (let i = 0; i < engine.allConstraints.length; i++) {
+          if (engine.allConstraints[i].maintainConstraint(collisionInfo)) {
+            // resolveCollision(
+            //   engine.allConstraints[i].bodyA,
+            //   engine.allConstraints[i].bodyB,
+            //   collisionInfo
+            // );
+            //engine.allConstraints[i].updateLink();
+          }
+        }
       }
     }
   };
@@ -72,8 +57,7 @@ function Physics() {
     var s1InvMass = s1.invMass;
     var s2InvMass = s2.invMass;
 
-    var num =
-      (collisionInfo.getDepth() / (s1InvMass + s2InvMass)) * posCorrectionRate;
+    var num = (collisionInfo.getDepth() / (s1InvMass + s2InvMass)) * posCorrectionRate;
     var correctAmount = collisionInfo.getNormal().scale(num);
 
     s1.move(correctAmount.scale(-s1InvMass));
@@ -92,21 +76,15 @@ function Physics() {
     // the direction of the collisionInfo is always from s1 to s2
     // but the Mass is inversed, so start scale with s2 and end
     // scale with s1
-    var start = collisionInfo.start.scale(
-      s2.invMass / (s1.invMass + s2.invMass)
-    );
+    var start = collisionInfo.start.scale(s2.invMass / (s1.invMass + s2.invMass));
     var end = collisionInfo.end.scale(s1.invMass / (s1.invMass + s2.invMass));
     var p = start.add(end);
     // r is vector from center of shape to collision point
     var r1 = p.subtract(s1.center);
     var r2 = p.subtract(s2.center);
 
-    var v1 = s1.velocity.add(
-      Vec2(-1 * s1.angularVelocity * r1.y, s1.angularVelocity * r1.x)
-    );
-    var v2 = s2.velocity.add(
-      Vec2(-1 * s2.angularVelocity * r2.y, s2.angularVelocity * r2.x)
-    );
+    var v1 = s1.velocity.add(Vec2(-1 * s1.angularVelocity * r1.y, s1.angularVelocity * r1.x));
+    var v2 = s2.velocity.add(Vec2(-1 * s2.angularVelocity * r2.y, s2.angularVelocity * r2.x));
     var relativeVelocity = v2.subtract(v1);
 
     // Relative velocity in normal direction
@@ -126,12 +104,7 @@ function Physics() {
 
     // Calc impulse scalar
     var jN = -(1 + newRestitution) * rVelocityInNormal;
-    jN =
-      jN /
-      (s1.invMass +
-        s2.invMass +
-        R1crossN * R1crossN * s1.inertia +
-        R2crossN * R2crossN * s2.inertia);
+    jN = jN / (s1.invMass + s2.invMass + R1crossN * R1crossN * s1.inertia + R2crossN * R2crossN * s2.inertia);
     // impulse is in direction of normal (from s1 to s2)
     var impulse = n.scale(jN);
     // impulse = F dt = m*∆v
@@ -149,14 +122,8 @@ function Physics() {
     var R1crossT = r1.cross(tangent);
     var R2crossT = r2.cross(tangent);
 
-    var jT =
-      -(1 + newRestitution) * relativeVelocity.dot(tangent) * newFriction;
-    jT =
-      jT /
-      (s1.invMass +
-        s2.invMass +
-        R1crossT * R1crossT * s1.inertia +
-        R2crossT * R2crossT * s2.inertia);
+    var jT = -(1 + newRestitution) * relativeVelocity.dot(tangent) * newFriction;
+    jT = jT / (s1.invMass + s2.invMass + R1crossT * R1crossT * s1.inertia + R2crossT * R2crossT * s2.inertia);
 
     // friction should be less than force in normal direction
     if (jT > jN) {
@@ -164,7 +131,6 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
-
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;

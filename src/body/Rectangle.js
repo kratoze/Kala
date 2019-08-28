@@ -54,7 +54,7 @@ var Rectangle = function(
 
 Common.extend(Rectangle, Body);
 /**
- * Moves the Rectangle. Use this to affect the Rectangle's positon instead of assigning to its center
+ * Moves the Rectangle by a given Vec2. Use this to affect the Rectangle's positon instead of assigning to its center
  *
  * @param  {Vec2} vec The Vector that is added to the Circle
  * @return {Rectangle}   Returns this Rectangle for method chaining
@@ -68,7 +68,7 @@ Rectangle.prototype.move = function(v) {
   return this;
 };
 /**
- * Rotates the Rectangle. Use this to affect the angle instead of assigning to its angle
+ * Rotates the Rectangle around its center. Use this to affect the angle instead of assigning directly to the angle
  *
  * @param  {number} angle The angle the Circle will be rotated. + for counterclockwise - for clockwise
  * @return {Rectangle}   Returns this Rectangle for method chaining

@@ -9,6 +9,7 @@ function Constraint(bodyA, bodyB, length, stiffness) {
   this.restingAngleB = this.bodyB.angle;
   this.length = length;
   this.stiffness = stiffness;
+  this.minLength = 0.0000001;
 }
 
 Constraint.prototype.maintainConstraint = function() {};

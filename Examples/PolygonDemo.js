@@ -1,22 +1,15 @@
-var engine = new Engine();
-var render = new PixiRender(500, 500, "stone", 20);
-engine.gravity = Vec2(0, 10);
 var scale = 20;
+
+var engine = new Engine();
+var render = new PixiRender(500, 500, "stone", scale);
+engine.gravity = Vec2(0, 10);
 var width, height;
 width = height = render.app.view.width;
 
 //var ground = new Kala.Rectangle(0, height / 2, 2, height, 0, 1, 1);
 //engine.add(ground);
-var triangleVertices = [
-  Vec2(250 / scale, 350 / scale),
-  Vec2(150 / scale, 200 / scale),
-  Vec2(100 / scale, 250 / scale)
-];
-var triangleVertices2 = [
-  Vec2(250 / scale, 350 / scale),
-  Vec2(150 / scale, 200 / scale),
-  Vec2(100 / scale, 250 / scale)
-];
+var triangleVertices = [Vec2(250 / scale, 350 / scale), Vec2(150 / scale, 200 / scale), Vec2(100 / scale, 250 / scale)];
+var triangleVertices2 = [Vec2(250 / scale, 350 / scale), Vec2(150 / scale, 200 / scale), Vec2(100 / scale, 250 / scale)];
 var otherShapePoly = [
   Vec2(250 / scale, 350 / scale),
   Vec2(150 / scale, 200 / scale),
@@ -37,19 +30,11 @@ var squarePolygonPoints2 = [
   Vec2(500 / scale, 200 / scale),
   Vec2(0 / scale, 200 / scale)
 ];
-var triangle = new Polygon(250, 250, triangleVertices, 10, 0.2, 0.2, 0.2);
-var triangle2 = new Polygon(250, 250, triangleVertices2, 10, 0, 1, 1);
+var triangle = new Polygon(triangleVertices, 0.2, 0.2, 0.2);
+var triangle2 = new Polygon(triangleVertices2, 0, 1, 1);
 
-var squarePolygon = new Polygon(250, 250, squarePolygonPoints, 1, 1, 1);
-var squarePolygon2 = new Polygon(
-  250,
-  250,
-  squarePolygonPoints2,
-  1,
-  0,
-  0.2,
-  0.2
-);
+var squarePolygon = new Polygon(squarePolygonPoints, 0, 1, 1);
+var squarePolygon2 = new Polygon(squarePolygonPoints2, 0, 0.2, 0.2);
 
 triangle.move(Vec2(100 / scale, 0));
 //triangle.velocity = Vec2(0, 20);
@@ -57,7 +42,7 @@ triangle.move(Vec2(100 / scale, 0));
 //triangle.rotate(0.9);
 engine.add(triangle);
 // engine.add(triangle2);
-// engine.add(squarePolygon);
+//engine.add(squarePolygon);
 // engine.add(squarePolygon2);
 
 squarePolygon2.move(Vec2(0, 400 / scale));
