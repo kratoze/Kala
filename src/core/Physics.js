@@ -1,38 +1,39 @@
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
 function Physics() {
-  var positionalCorrectionFlag = true;
+  var positionalCorrectionFlag = false;
   // number of relaxtion iterations
-  var relaxationCount = 15;
+  var relaxationCount = 40;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 
   var collision = function(engine) {
-    if (engine.movement === true) {
-      var i, j, k;
-      var collisionInfo = new CollisionInfo();
-      for (k = 0; k < relaxationCount; k++) {
-        for (i = 0; i < engine.allBodies.length; i++) {
-          for (j = i + 1; j < engine.allBodies.length; j++) {
-            if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
-              if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
-                if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
-                  collisionInfo.changeDir();
-                }
-                if (engine.allBodies[i].isSensor === true || engine.allBodies[j].isSensor === true) {
-                  collisionInfo.bodyA = engine.allBodies[i];
-                  collisionInfo.bodyAIndex = i;
-                  collisionInfo.bodyB = engine.allBodies[j];
-                  collisionInfo.bodyBIndex = j;
-                  return collisionInfo;
-                } else {
-                  resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
-                }
+    //  if (engine.movement === true) {
+    var i, j, k;
+    var collisionInfo = new CollisionInfo();
+    for (k = 0; k < relaxationCount; k++) {
+      for (i = 0; i < engine.allBodies.length; i++) {
+        for (j = i + 1; j < engine.allBodies.length; j++) {
+          if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+            if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
+              if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
+                collisionInfo.changeDir();
+              }
+              if (engine.allBodies[i].isSensor === true || engine.allBodies[j].isSensor === true) {
+                collisionInfo.bodyA = engine.allBodies[i];
+                collisionInfo.bodyAIndex = i;
+                collisionInfo.bodyB = engine.allBodies[j];
+                collisionInfo.bodyBIndex = j;
+                return collisionInfo;
+              } else {
+                render.drawLine(collisionInfo.start, collisionInfo.end);
+                resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
               }
             }
           }
         }
       }
     }
+    //  }
   };
 
   var maintainConstraints = function(engine) {
@@ -59,7 +60,6 @@ function Physics() {
 
     var num = (collisionInfo.getDepth() / (s1InvMass + s2InvMass)) * posCorrectionRate;
     var correctAmount = collisionInfo.getNormal().scale(num);
-
     s1.move(correctAmount.scale(-s1InvMass));
     s2.move(correctAmount.scale(s2InvMass));
   };
@@ -131,7 +131,7 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
-    console.log(impulse);
+    //console.log(impulse);
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;

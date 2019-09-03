@@ -110,6 +110,15 @@ Vec2.prototype.normalize = function() {
 };
 
 /**
+ * Returns the perpendicular of the Vector which is (y, -x)
+ *
+ * @return {Vec2}     The perpendicular Vector
+ */
+Vec2.prototype.perp = function() {
+  return Vec2(this.y, -this.x);
+};
+
+/**
  * Calculates the distance between a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector

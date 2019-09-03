@@ -15,16 +15,7 @@
  * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
-var Rectangle = function(
-  x,
-  y,
-  width,
-  height,
-  mass,
-  friction,
-  restitution,
-  options
-) {
+var Rectangle = function(x, y, width, height, mass, friction, restitution, options) {
   Body.call(this, x, y, mass, friction, restitution, options);
   this.type = "Rectangle";
   this.width = width;
@@ -99,10 +90,7 @@ Rectangle.prototype.updateInertia = function() {
     this.inertia = 0;
   } else {
     // inertia=mass*width°2+height°2
-    this.inertia =
-      ((1 / this.invMass) *
-        (this.width * this.width + this.height * this.height)) /
-      12;
+    this.inertia = ((1 / this.invMass) * (this.width * this.width + this.height * this.height)) / 12;
     this.inertia = 1 / this.inertia;
   }
 };

@@ -156,18 +156,18 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.lineStyle(1 / scale, polygon.lineColor || 0x03f8fc);
     polygonGraphics.lineColor;
     //polygonGraphics.beginFill(0x3500fa, 1);
-    polygonGraphics.drawPolygon(polygon.verticesToPath());
+    polygonGraphics.drawPolygon(polygon.vertexToPath());
     //polygonGraphics.endFill();
 
     var midpoint;
-    for (let i = 0; i < polygon.vertices.length - 1; i++) {
-      //render.drawLine(this.vertices[i], this.vertices[i + 1]);
-      midpoint = polygon.vertices[i].midpoint(polygon.vertices[i + 1]);
-      self.drawLine(midpoint, midpoint.add(polygon.faceNormals[i].scale(10 / scale)));
+    for (let i = 0; i < polygon.vertex.length - 1; i++) {
+      //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+      midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
+      self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
     }
-    //render.drawLine(polygon.vertices[0], polygon.vertices[polygon.vertices.length - 1]);
-    midpoint = polygon.vertices[0].midpoint(polygon.vertices[polygon.vertices.length - 1]);
-    self.drawLine(midpoint, midpoint.add(polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)));
+    //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
+    midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
+    self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
   this.clear = function() {
@@ -186,7 +186,7 @@ function PixiRender(width, height, theme, scale) {
     var renderBody;
 
     for (let i = 0; i < bodies.length; i++) {
-      bodies[i].draw(this);
+      //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
       if (!renderBody) {
         renderBody = this.addShape(bodies[i]);

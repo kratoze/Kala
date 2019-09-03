@@ -112,6 +112,8 @@ Body.prototype.boundTest = function(otherShape) {
   var rSum = this.boundRadius + otherShape.boundRadius;
   var dist = vFrom1to2.length();
   if (dist > rSum) {
+    //TO DO: CHANGE BACK TO FALSE
+
     return true; //not overlapping
   }
   return true;

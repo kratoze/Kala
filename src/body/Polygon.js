@@ -1,14 +1,18 @@
-var Polygon = function(vertices, mass, friction, restitution, options) {
-  // vertices is an array of Vec2
-  this.vertices = vertices;
+var Polygon = function(vertex, mass, friction, restitution, options) {
+  var self = this;
+  // vertex is an array of Vec2
+  this.vertex = vertex.slice();
   // find the center of the polygon once vertices are set
   var centroid = this.findCentroid();
   Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);
+  this.sortVertices();
+
   this.type = "Polygon";
   // get the edges of the polygon and store in an array of Vec2
-  this.edges = this.getEdges();
-  // get the normals for each edge and store in an array of Vec2
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  // calculate the normals for each edge and store in an array of Vec2
+  this.faceNormal = this.calculateFaceNormals();
+  //this.sortVertices();
 
   // update the polygon's inertia using the mass
   this.updateInertia();
@@ -25,11 +29,11 @@ Common.extend(Polygon, Body);
  */
 Polygon.prototype.move = function(v) {
   // move each vertex by the vector passed in
-  for (let i = 0; i < this.vertices.length; i++) {
-    this.vertices[i] = this.vertices[i].add(v);
+  for (let i = 0; i < this.vertex.length; i++) {
+    this.vertex[i] = this.vertex[i].add(v);
   }
-  this.edges = this.getEdges();
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
   // move the center
   this.center = this.center.add(v);
   return this;
@@ -45,27 +49,27 @@ Polygon.prototype.rotate = function(angle) {
   //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
-  for (let i = 0; i < this.vertices.length; i++) {
-    this.vertices[i] = this.vertices[i].rotate(this.center, angle);
+  for (let i = 0; i < this.vertex.length; i++) {
+    this.vertex[i] = this.vertex[i].rotate(this.center, angle);
   }
   // new orientation requires edges and face normals to be calculated again.
-  this.edges = this.getEdges();
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
   return this;
 };
 
 /**
- * Calculates the Polygon's edges from its vertices.
+ * Calculates the Polygon's edges from its vertex.
  * Called automatically by the constructor and Rotate method
  *
  * @return {Vec2[]}  An array containing the Edges
  */
-Polygon.prototype.getEdges = function() {
+Polygon.prototype.calculateEdges = function() {
   var tmpEdges = [];
-  for (let i = 0; i < this.vertices.length - 1; i++) {
-    tmpEdges[i] = this.vertices[i + 1].subtract(this.vertices[i]);
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    tmpEdges[i] = this.vertex[i].subtract(this.vertex[i + 1]);
   }
-  tmpEdges[tmpEdges.length] = this.vertices[0].subtract(this.vertices[this.vertices.length - 1]);
+  tmpEdges[tmpEdges.length] = this.vertex[this.vertex.length - 1].subtract(this.vertex[0]);
   return tmpEdges;
 };
 
@@ -77,7 +81,7 @@ Polygon.prototype.getEdges = function() {
  *
  * @return {Vec2[]}  An array containing the face normals
  */
-Polygon.prototype.getFaceNormals = function() {
+Polygon.prototype.calculateFaceNormals = function() {
   var tmpFNormals = [];
 
   for (let i = 0; i < this.edges.length; i++) {
@@ -92,16 +96,16 @@ Polygon.prototype.getFaceNormals = function() {
 };
 
 /**
- * Returns an array unformatted array of the Polygon's vertices.
- * Useful for passing the vertices to other APIs
+ * Returns an array unformatted array of the Polygon's vertex.
+ * Useful for passing the vertex to other APIs
  *
  * @return {number[]}  The vertex points as an array
  */
-Polygon.prototype.verticesToPath = function() {
+Polygon.prototype.vertexToPath = function() {
   var vertexArray = [];
-  for (let i = 0; i < this.vertices.length; i++) {
-    vertexArray.push(this.vertices[i].x);
-    vertexArray.push(this.vertices[i].y);
+  for (let i = 0; i < this.vertex.length; i++) {
+    vertexArray.push(this.vertex[i].x);
+    vertexArray.push(this.vertex[i].y);
   }
   return vertexArray;
 };
@@ -121,11 +125,11 @@ Polygon.prototype.findCentroid = function() {
     v1;
   var centroid = Vec2(0, 0);
 
-  // calculate the signed area between vertices
-  for (let i = 0; i < this.vertices.length - 1; i++) {
-    // get the current and next vertices
-    v0 = this.vertices[i];
-    v1 = this.vertices[i + 1];
+  // calculate the signed area between vertex
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    // calculate the current and next vertex
+    v0 = this.vertex[i];
+    v1 = this.vertex[i + 1];
 
     // a = (xi * yi+1 - xi+1 * yi)
     a = v0.x * v1.y - v1.x * v0.y;
@@ -134,9 +138,9 @@ Polygon.prototype.findCentroid = function() {
     centroid.y += (v0.y + v1.y) * a;
   }
 
-  // calulate the signed area between the last and first vertices
-  v0 = this.vertices[this.vertices.length - 1];
-  v1 = this.vertices[0];
+  // calulate the signed area between the last and first vertex
+  v0 = this.vertex[this.vertex.length - 1];
+  v1 = this.vertex[0];
   a = v0.x * v1.y - v1.x * v0.y;
   signedArea += a;
   centroid.x += (v0.x + v1.x) * a;
@@ -150,6 +154,19 @@ Polygon.prototype.findCentroid = function() {
   return centroid;
 };
 
+Polygon.prototype.sortVertices = function() {
+  var angleFromCenter;
+  var center = this.center;
+  //for (let i = 0; i < this.vertex.length - 1; i++) {
+  // angleFromCenterV1 = this.center.angleFromVector(this.vertex[i]);
+  // angleFromCenterV2 = this.center.angleFromVector(this.vertex[i]);
+
+  this.vertex.sort(function(a, b) {
+    return a.angleFromVector(center) - b.angleFromVector(center);
+  });
+  //  }
+};
+
 var centroidGraphic = new PIXI.Graphics();
 
 Polygon.prototype.draw = function(render) {
@@ -161,14 +178,14 @@ Polygon.prototype.draw = function(render) {
 
   //render.drawPolygon(this);
   // var midpoint;
-  // for (let i = 0; i < this.vertices.length - 1; i++) {
-  //   //render.drawLine(this.vertices[i], this.vertices[i + 1]);
-  //   midpoint = this.vertices[i].midpoint(this.vertices[i + 1]);
-  //   render.drawLine(midpoint, midpoint.add(this.faceNormals[i].scale(10)));
+  // for (let i = 0; i < this.vertex.length - 1; i++) {
+  //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+  //   midpoint = this.vertex[i].midpoint(this.vertex[i + 1]);
+  //   render.drawLine(midpoint, midpoint.add(this.faceNormal[i].scale(10)));
   // }
-  // //render.drawLine(this.vertices[0], this.vertices[this.vertices.length - 1]);
-  // midpoint = this.vertices[0].midpoint(this.vertices[this.vertices.length - 1]);
-  // render.drawLine(midpoint, midpoint.add(this.faceNormals[2].scale(10)));
+  // //render.drawLine(this.vertex[0], this.vertex[this.vertex.length - 1]);
+  // midpoint = this.vertex[0].midpoint(this.vertex[this.vertex.length - 1]);
+  // render.drawLine(midpoint, midpoint.add(this.faceNormal[2].scale(10)));
 };
 
 /**
@@ -180,18 +197,17 @@ Polygon.prototype.updateInertia = function() {
   //
   // find the area of the polygon
   // area = sum of (XnYn+1 - YnXn+1) / 2
-  // where n is number of vertices
+  // where n is number of vertex
   if (this.invMass === 0) {
     this.inertia = 0;
   } else {
     var areaSum = 0;
     var area;
-    for (let i = 0; i < this.vertices - 1; i++) {
-      areaSum += this.vertices[i].x * this.vertices[i + 1].y - this.vertices[i].y * this.vertices[i + 1].x;
+    for (let i = 0; i < this.vertex - 1; i++) {
+      areaSum += this.vertex[i].x * this.vertex[i + 1].y - this.vertex[i].y * this.vertex[i + 1].x;
     }
     areaSum +=
-      this.vertices[this.vertices.length - 1].x * this.vertices[0].y -
-      this.vertices[this.vertices.length - 1].y * this.vertices[0].x;
+      this.vertex[this.vertex.length - 1].x * this.vertex[0].y - this.vertex[this.vertex.length - 1].y * this.vertex[0].x;
     areaSum = Math.abs(areaSum);
     area = areaSum / 2;
     this.inertia = ((1 / this.invMass) * area) / 12;

@@ -110,6 +110,15 @@ Vec2.prototype.normalize = function() {
 };
 
 /**
+ * Returns the perpendicular of the Vector which is (y, -x)
+ *
+ * @return {Vec2}     The perpendicular Vector
+ */
+Vec2.prototype.perp = function() {
+  return Vec2(this.y, -this.x);
+};
+
+/**
  * Calculates the distance between a Vector and this Vector
  *
  * @param  {Vec2} vec The other Vector
@@ -462,18 +471,18 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.lineStyle(1 / scale, polygon.lineColor || 0x03f8fc);
     polygonGraphics.lineColor;
     //polygonGraphics.beginFill(0x3500fa, 1);
-    polygonGraphics.drawPolygon(polygon.verticesToPath());
+    polygonGraphics.drawPolygon(polygon.vertexToPath());
     //polygonGraphics.endFill();
 
     var midpoint;
-    for (let i = 0; i < polygon.vertices.length - 1; i++) {
-      //render.drawLine(this.vertices[i], this.vertices[i + 1]);
-      midpoint = polygon.vertices[i].midpoint(polygon.vertices[i + 1]);
-      self.drawLine(midpoint, midpoint.add(polygon.faceNormals[i].scale(10 / scale)));
+    for (let i = 0; i < polygon.vertex.length - 1; i++) {
+      //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+      midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
+      self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
     }
-    //render.drawLine(polygon.vertices[0], polygon.vertices[polygon.vertices.length - 1]);
-    midpoint = polygon.vertices[0].midpoint(polygon.vertices[polygon.vertices.length - 1]);
-    self.drawLine(midpoint, midpoint.add(polygon.faceNormals[polygon.faceNormals.length - 1].scale(10 / scale)));
+    //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
+    midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
+    self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
   this.clear = function() {
@@ -492,7 +501,7 @@ function PixiRender(width, height, theme, scale) {
     var renderBody;
 
     for (let i = 0; i < bodies.length; i++) {
-      bodies[i].draw(this);
+      //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
       if (!renderBody) {
         renderBody = this.addShape(bodies[i]);
@@ -505,39 +514,40 @@ function PixiRender(width, height, theme, scale) {
 
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
 function Physics() {
-  var positionalCorrectionFlag = true;
+  var positionalCorrectionFlag = false;
   // number of relaxtion iterations
-  var relaxationCount = 15;
+  var relaxationCount = 40;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 
   var collision = function(engine) {
-    if (engine.movement === true) {
-      var i, j, k;
-      var collisionInfo = new CollisionInfo();
-      for (k = 0; k < relaxationCount; k++) {
-        for (i = 0; i < engine.allBodies.length; i++) {
-          for (j = i + 1; j < engine.allBodies.length; j++) {
-            if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
-              if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
-                if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
-                  collisionInfo.changeDir();
-                }
-                if (engine.allBodies[i].isSensor === true || engine.allBodies[j].isSensor === true) {
-                  collisionInfo.bodyA = engine.allBodies[i];
-                  collisionInfo.bodyAIndex = i;
-                  collisionInfo.bodyB = engine.allBodies[j];
-                  collisionInfo.bodyBIndex = j;
-                  return collisionInfo;
-                } else {
-                  resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
-                }
+    //  if (engine.movement === true) {
+    var i, j, k;
+    var collisionInfo = new CollisionInfo();
+    for (k = 0; k < relaxationCount; k++) {
+      for (i = 0; i < engine.allBodies.length; i++) {
+        for (j = i + 1; j < engine.allBodies.length; j++) {
+          if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+            if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
+              if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
+                collisionInfo.changeDir();
+              }
+              if (engine.allBodies[i].isSensor === true || engine.allBodies[j].isSensor === true) {
+                collisionInfo.bodyA = engine.allBodies[i];
+                collisionInfo.bodyAIndex = i;
+                collisionInfo.bodyB = engine.allBodies[j];
+                collisionInfo.bodyBIndex = j;
+                return collisionInfo;
+              } else {
+                render.drawLine(collisionInfo.start, collisionInfo.end);
+                resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
               }
             }
           }
         }
       }
     }
+    //  }
   };
 
   var maintainConstraints = function(engine) {
@@ -564,7 +574,6 @@ function Physics() {
 
     var num = (collisionInfo.getDepth() / (s1InvMass + s2InvMass)) * posCorrectionRate;
     var correctAmount = collisionInfo.getNormal().scale(num);
-
     s1.move(correctAmount.scale(-s1InvMass));
     s2.move(correctAmount.scale(s2InvMass));
   };
@@ -636,7 +645,7 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
-    console.log(impulse);
+    //console.log(impulse);
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;
@@ -808,6 +817,8 @@ Body.prototype.boundTest = function(otherShape) {
   var rSum = this.boundRadius + otherShape.boundRadius;
   var dist = vFrom1to2.length();
   if (dist > rSum) {
+    //TO DO: CHANGE BACK TO FALSE
+
     return true; //not overlapping
   }
   return true;
@@ -901,17 +912,21 @@ CollisionInfo.prototype.changeDir = function() {
   this.end = n;
 };
 
-var Polygon = function(vertices, mass, friction, restitution, options) {
-  // vertices is an array of Vec2
-  this.vertices = vertices;
+var Polygon = function(vertex, mass, friction, restitution, options) {
+  var self = this;
+  // vertex is an array of Vec2
+  this.vertex = vertex.slice();
   // find the center of the polygon once vertices are set
   var centroid = this.findCentroid();
   Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);
+  this.sortVertices();
+
   this.type = "Polygon";
   // get the edges of the polygon and store in an array of Vec2
-  this.edges = this.getEdges();
-  // get the normals for each edge and store in an array of Vec2
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  // calculate the normals for each edge and store in an array of Vec2
+  this.faceNormal = this.calculateFaceNormals();
+  //this.sortVertices();
 
   // update the polygon's inertia using the mass
   this.updateInertia();
@@ -928,11 +943,11 @@ Common.extend(Polygon, Body);
  */
 Polygon.prototype.move = function(v) {
   // move each vertex by the vector passed in
-  for (let i = 0; i < this.vertices.length; i++) {
-    this.vertices[i] = this.vertices[i].add(v);
+  for (let i = 0; i < this.vertex.length; i++) {
+    this.vertex[i] = this.vertex[i].add(v);
   }
-  this.edges = this.getEdges();
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
   // move the center
   this.center = this.center.add(v);
   return this;
@@ -948,27 +963,27 @@ Polygon.prototype.rotate = function(angle) {
   //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
-  for (let i = 0; i < this.vertices.length; i++) {
-    this.vertices[i] = this.vertices[i].rotate(this.center, angle);
+  for (let i = 0; i < this.vertex.length; i++) {
+    this.vertex[i] = this.vertex[i].rotate(this.center, angle);
   }
   // new orientation requires edges and face normals to be calculated again.
-  this.edges = this.getEdges();
-  this.faceNormals = this.getFaceNormals();
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
   return this;
 };
 
 /**
- * Calculates the Polygon's edges from its vertices.
+ * Calculates the Polygon's edges from its vertex.
  * Called automatically by the constructor and Rotate method
  *
  * @return {Vec2[]}  An array containing the Edges
  */
-Polygon.prototype.getEdges = function() {
+Polygon.prototype.calculateEdges = function() {
   var tmpEdges = [];
-  for (let i = 0; i < this.vertices.length - 1; i++) {
-    tmpEdges[i] = this.vertices[i + 1].subtract(this.vertices[i]);
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    tmpEdges[i] = this.vertex[i].subtract(this.vertex[i + 1]);
   }
-  tmpEdges[tmpEdges.length] = this.vertices[0].subtract(this.vertices[this.vertices.length - 1]);
+  tmpEdges[tmpEdges.length] = this.vertex[this.vertex.length - 1].subtract(this.vertex[0]);
   return tmpEdges;
 };
 
@@ -980,7 +995,7 @@ Polygon.prototype.getEdges = function() {
  *
  * @return {Vec2[]}  An array containing the face normals
  */
-Polygon.prototype.getFaceNormals = function() {
+Polygon.prototype.calculateFaceNormals = function() {
   var tmpFNormals = [];
 
   for (let i = 0; i < this.edges.length; i++) {
@@ -995,16 +1010,16 @@ Polygon.prototype.getFaceNormals = function() {
 };
 
 /**
- * Returns an array unformatted array of the Polygon's vertices.
- * Useful for passing the vertices to other APIs
+ * Returns an array unformatted array of the Polygon's vertex.
+ * Useful for passing the vertex to other APIs
  *
  * @return {number[]}  The vertex points as an array
  */
-Polygon.prototype.verticesToPath = function() {
+Polygon.prototype.vertexToPath = function() {
   var vertexArray = [];
-  for (let i = 0; i < this.vertices.length; i++) {
-    vertexArray.push(this.vertices[i].x);
-    vertexArray.push(this.vertices[i].y);
+  for (let i = 0; i < this.vertex.length; i++) {
+    vertexArray.push(this.vertex[i].x);
+    vertexArray.push(this.vertex[i].y);
   }
   return vertexArray;
 };
@@ -1024,11 +1039,11 @@ Polygon.prototype.findCentroid = function() {
     v1;
   var centroid = Vec2(0, 0);
 
-  // calculate the signed area between vertices
-  for (let i = 0; i < this.vertices.length - 1; i++) {
-    // get the current and next vertices
-    v0 = this.vertices[i];
-    v1 = this.vertices[i + 1];
+  // calculate the signed area between vertex
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    // calculate the current and next vertex
+    v0 = this.vertex[i];
+    v1 = this.vertex[i + 1];
 
     // a = (xi * yi+1 - xi+1 * yi)
     a = v0.x * v1.y - v1.x * v0.y;
@@ -1037,9 +1052,9 @@ Polygon.prototype.findCentroid = function() {
     centroid.y += (v0.y + v1.y) * a;
   }
 
-  // calulate the signed area between the last and first vertices
-  v0 = this.vertices[this.vertices.length - 1];
-  v1 = this.vertices[0];
+  // calulate the signed area between the last and first vertex
+  v0 = this.vertex[this.vertex.length - 1];
+  v1 = this.vertex[0];
   a = v0.x * v1.y - v1.x * v0.y;
   signedArea += a;
   centroid.x += (v0.x + v1.x) * a;
@@ -1053,6 +1068,19 @@ Polygon.prototype.findCentroid = function() {
   return centroid;
 };
 
+Polygon.prototype.sortVertices = function() {
+  var angleFromCenter;
+  var center = this.center;
+  //for (let i = 0; i < this.vertex.length - 1; i++) {
+  // angleFromCenterV1 = this.center.angleFromVector(this.vertex[i]);
+  // angleFromCenterV2 = this.center.angleFromVector(this.vertex[i]);
+
+  this.vertex.sort(function(a, b) {
+    return a.angleFromVector(center) - b.angleFromVector(center);
+  });
+  //  }
+};
+
 var centroidGraphic = new PIXI.Graphics();
 
 Polygon.prototype.draw = function(render) {
@@ -1064,14 +1092,14 @@ Polygon.prototype.draw = function(render) {
 
   //render.drawPolygon(this);
   // var midpoint;
-  // for (let i = 0; i < this.vertices.length - 1; i++) {
-  //   //render.drawLine(this.vertices[i], this.vertices[i + 1]);
-  //   midpoint = this.vertices[i].midpoint(this.vertices[i + 1]);
-  //   render.drawLine(midpoint, midpoint.add(this.faceNormals[i].scale(10)));
+  // for (let i = 0; i < this.vertex.length - 1; i++) {
+  //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+  //   midpoint = this.vertex[i].midpoint(this.vertex[i + 1]);
+  //   render.drawLine(midpoint, midpoint.add(this.faceNormal[i].scale(10)));
   // }
-  // //render.drawLine(this.vertices[0], this.vertices[this.vertices.length - 1]);
-  // midpoint = this.vertices[0].midpoint(this.vertices[this.vertices.length - 1]);
-  // render.drawLine(midpoint, midpoint.add(this.faceNormals[2].scale(10)));
+  // //render.drawLine(this.vertex[0], this.vertex[this.vertex.length - 1]);
+  // midpoint = this.vertex[0].midpoint(this.vertex[this.vertex.length - 1]);
+  // render.drawLine(midpoint, midpoint.add(this.faceNormal[2].scale(10)));
 };
 
 /**
@@ -1083,18 +1111,17 @@ Polygon.prototype.updateInertia = function() {
   //
   // find the area of the polygon
   // area = sum of (XnYn+1 - YnXn+1) / 2
-  // where n is number of vertices
+  // where n is number of vertex
   if (this.invMass === 0) {
     this.inertia = 0;
   } else {
     var areaSum = 0;
     var area;
-    for (let i = 0; i < this.vertices - 1; i++) {
-      areaSum += this.vertices[i].x * this.vertices[i + 1].y - this.vertices[i].y * this.vertices[i + 1].x;
+    for (let i = 0; i < this.vertex - 1; i++) {
+      areaSum += this.vertex[i].x * this.vertex[i + 1].y - this.vertex[i].y * this.vertex[i + 1].x;
     }
     areaSum +=
-      this.vertices[this.vertices.length - 1].x * this.vertices[0].y -
-      this.vertices[this.vertices.length - 1].y * this.vertices[0].x;
+      this.vertex[this.vertex.length - 1].x * this.vertex[0].y - this.vertex[this.vertex.length - 1].y * this.vertex[0].x;
     areaSum = Math.abs(areaSum);
     area = areaSum / 2;
     this.inertia = ((1 / this.invMass) * area) / 12;
@@ -1119,16 +1146,7 @@ Polygon.prototype.updateInertia = function() {
  * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
  * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
  */
-var Rectangle = function(
-  x,
-  y,
-  width,
-  height,
-  mass,
-  friction,
-  restitution,
-  options
-) {
+var Rectangle = function(x, y, width, height, mass, friction, restitution, options) {
   Body.call(this, x, y, mass, friction, restitution, options);
   this.type = "Rectangle";
   this.width = width;
@@ -1203,10 +1221,7 @@ Rectangle.prototype.updateInertia = function() {
     this.inertia = 0;
   } else {
     // inertia=mass*width°2+height°2
-    this.inertia =
-      ((1 / this.invMass) *
-        (this.width * this.width + this.height * this.height)) /
-      12;
+    this.inertia = ((1 / this.invMass) * (this.width * this.width + this.height * this.height)) / 12;
     this.inertia = 1 / this.inertia;
   }
 };
@@ -1500,145 +1515,175 @@ Circle.prototype.collidedCircCirc = function(c1, c2, collisionInfo) {
   return true;
 };
 
-function polygonConfiguration() {
-  this.min;
-  this.max;
-  this.minIndex;
-  this.maxIndex;
-  this.normal;
-  this.collisionType = [];
-}
 // Geometric Tools For Computer Graphics pg 269
 Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Polygon") {
-    status = this.collidedPolyPoly(otherShape, collisionInfo);
+    status = this.collidedPolyPoly(this, otherShape, collisionInfo);
   }
   return status;
 };
 
-Polygon.prototype.computeInterval = function(polygon, normal, polyConfig, collisionInfo) {
-  var min = 999999;
-  var max = -99999;
+Polygon.prototype.findInterval = function(normal) {
+  normal = normal.perp();
+  var dotProduct = this.vertex[0].dot(normal);
   var current;
-  var interval = { min: 0, max: 0 };
-  var bestVec;
-  var dotProduct = normal.dot(polygon.vertices[0]);
 
-  for (let i = 0; i < polygon.vertices.length; i++) {
-    current = polygon.vertices[i].dot(normal); //normal.dot(polygon.vertices[i]);
-    if (current < min) {
-      min = interval.min = current;
-      polyConfig.min = current;
-      polyConfig.minIndex = i;
-      polyConfig.normal = normal;
-    }
+  var min, max;
+  min = dotProduct;
+  max = min;
+
+  for (let i = 1; i < this.vertex.length; i++) {
+    current = this.vertex[i].dot(normal);
     if (current > max) {
-      max = interval.max = current;
-      polyConfig.max = current;
-      polyConfig.maxIndex = i;
-      polyConfig.normal = normal;
-      bestVec = normal.scale(max);
-      //collisionInfo.setInfo(max, normal, polygon.vertices[i].add(bestVec));
+      max = current;
+    }
+    if (current < min) {
+      min = current;
     }
   }
-  return interval;
-};
-var tmpSupport = new SupportStruct();
 
-Polygon.prototype.findSupportPoint = function(dir) {
-  var vertex;
-  var projection;
-
-  tmpSupport.supportPointDist = -9999999;
-  tmpSupport.supportPoint = null;
-
-  for (let i = 0; i < this.vertices.length; i++) {
-    vertex = this.vertices[i];
-    projection = vertex.dot(dir);
-    if (projection > tmpSupport.supportPointDist) {
-      tmpSupport.supportPoint = vertex;
-      tmpSupport.supportPointDist = projection;
-    }
-  }
+  return { min: min, max: max };
 };
 
-Polygon.prototype.findAxisLeastPenetration = function(otherPolygon, collisionInfo) {
-  var n;
-  var supportPoint;
-  var bestDistance = 999999;
-  var bestIndex = null;
+Polygon.prototype.polygonOverlaps = function(otherPoly) {
+  var polyConfig1, polyConfig2, faceNormal, overlap;
+  var dir;
+  var minOverlap = 999999;
+  var minNormal;
 
-  var hasSupport = true;
-  var i = 0;
+  var overlapInfo = {
+    minNormal: null,
+    minOverlap: 999999
+  };
 
-  while (hasSupport && i < this.faceNormals.length) {
-    n = this.faceNormals[i];
-
-    var dir = n;
-    var ptOnEdge = this.vertices[i];
-
-    otherPolygon.findSupportPoint(dir, ptOnEdge);
-    hasSupport = tmpSupport.supportPoint !== null;
-    if (hasSupport && tmpSupport.supportPointDist < bestDistance) {
-      bestDistance = tmpSupport.supportPointDist;
-      bestIndex = i;
-      supportPoint = tmpSupport.supportPoint;
-    }
-    i++;
-  }
-  if (hasSupport) {
-    var bestVec = this.faceNormals[bestIndex].scale(bestDistance);
-    collisionInfo.setInfo(bestDistance, this.faceNormals[bestIndex], supportPoint.add(bestVec));
-  }
-  return hasSupport;
-};
-
-var collisionInfoR1 = new CollisionInfo();
-var collisionInfoR2 = new CollisionInfo();
-
-Polygon.prototype.collidedPolyPoly = function(otherPolygon, collisionInfo) {
-  var status1 = false;
-  var status2 = false;
-
-  var polyConfig1 = new polygonConfiguration();
-  var polyConfig2 = new polygonConfiguration();
-
-  var interval1, interval2, d;
-  for (let i = 0; i < this.faceNormals.length; i++) {
-    d = this.faceNormals[i];
-    interval1 = this.computeInterval(this, d, polyConfig1, collisionInfoR1);
-    interval2 = this.computeInterval(otherPolygon, d, polyConfig2, collisionInfoR2);
+  for (let i = 0; i < this.faceNormal.length; i++) {
+    faceNormal = this.faceNormal[i];
+    polyConfig1 = this.findInterval(faceNormal);
+    polyConfig2 = otherPoly.findInterval(faceNormal);
+    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
     if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
       this.lineColor = null;
       return false;
     }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
   }
 
-  for (let i = 0; i < otherPolygon.faceNormals.length; i++) {
-    d = otherPolygon.faceNormals[i];
-    interval1 = this.computeInterval(this, d, polyConfig1, collisionInfoR1);
-    interval2 = this.computeInterval(otherPolygon, d, polyConfig2, collisionInfoR2);
+  for (let i = 0; i < otherPoly.faceNormal.length; i++) {
+    faceNormal = otherPoly.faceNormal[i];
+    polyConfig1 = this.findInterval(faceNormal);
+    polyConfig2 = otherPoly.findInterval(faceNormal);
+    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
     if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
       this.lineColor = null;
       return false;
     }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
   }
-  //this.lineColor = "0xfc030f";
-  var depth1 = interval1.max - interval2.min;
-  var depth2 = interval2.max - interval1.min;
 
-  if (depth1 < depth2) {
-    collisionInfo.setInfo(depth1, polyConfig1.normal, this.vertices[polyConfig1.minIndex]);
+  return overlapInfo;
+};
+
+// The normalized axis multiplied with the shortest
+// overlap will yield the penetration vector.
+Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
+  var overlap1, overlap2, overlap;
+
+  if (polyA.bodyID > polyB.bodyID) {
+    var polyTmp = polyB;
+    polyB = polyA;
+    polyA = polyTmp;
+  }
+
+  overlap1 = polyA.polygonOverlaps(polyB);
+  overlap2 = polyB.polygonOverlaps(polyA);
+
+  if (!overlap1 || !overlap2) {
+    return false;
+  }
+  if (overlap1.minOverlap < overlap2.minOverlap) {
+    overlap = overlap1;
   } else {
-    collisionInfo.setInfo(depth2, polyConfig1.normal, this.vertices[polyConfig1.minIndex]);
+    overlap = overlap2;
   }
+  var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
+
+  this.dotTest = overlap.minNormal.dot(polyB.center.subtract(polyA.center));
+  if (this.dotTest < 0) {
+    overlap.minNormal = overlap.minNormal.scale(-1);
+    penetrationVector = Vec2(0, 0);
+  }
+
+  var supportsA = polyA.findSupportPoints(overlap.minNormal.scale(-1), polyB);
+  //console.log(overlap.minNormal);
+  var supportsB = polyB.findSupportPoints(overlap.minNormal, polyA);
+  //console.log(supportsB);
+
+  var distance = overlap.minNormal.scale(-1).dot(supportsB[0]);
+  //distance = distance / overlap.minNormal.scale(distance);
+  var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
+
+  collisionInfo.setInfo(overlap.minOverlap, overlap.minNormal, supportsB[0]);
+
   return true;
 };
 
 Polygon.prototype.collidedPolyRect = function() {};
 
 Polygon.prototype.collidedPolyCirc = function() {};
+
+Polygon.prototype.findSupportPoints = function(dir) {
+  //https://www.gamedev.net/forums/topic/453179-point-of-collision/
+  var supports = [];
+  var count = 0;
+  var minDistance = 99999;
+  var distance, vertex, index;
+  for (let i = 0; i < this.vertex.length; i++) {
+    vertex = this.vertex[i];
+    distance = vertex.dot(dir);
+    if (distance < minDistance) {
+      minDistance = distance;
+      supports[0] = vertex;
+      index = i;
+    }
+  }
+  var prevDistance, nextDistance;
+  var nextIndex = index + 1 >= this.vertex.length ? 0 : index + 1;
+  var prevIndex = index - 1 < 0 ? this.vertex.length - 1 : index - 1;
+  vertex = this.vertex[prevIndex];
+  prevDistance = vertex.dot(dir);
+  vertex = this.vertex[nextIndex];
+  nextDistance = vertex.dot(dir);
+  //console.log("minDist:" + minDistance + " prevDistance: " + nextDistance);
+  if (prevDistance === minDistance) {
+    //console.log("edge");
+
+    // support points are colinear, they form an edge
+    supports[1] = this.vertex[prevIndex];
+  } else if (nextDistance === minDistance) {
+    //console.log("edge");
+    // support points are colinear, they form an edge
+    supports[1] = this.vertex[nextIndex];
+  } else if (prevDistance < nextDistance) {
+    supports[1] = this.vertex[prevIndex];
+  } else {
+    supports[1] = this.vertex[nextIndex];
+  }
+
+  //   else if (prevDistance === minDistance) {
+  //     supports[1] = prevIndex;
+  //     console.log("edge");
+  //   } else {
+  //     supports[1] = nextIndex;
+  //   }
+  return supports;
+};
 
 // Geometrics Tools for Computer Graphics pg.275
 Polygon.prototype.notIntersecting = function(tMax, speed, interval1, interval2, tFirst, tLast) {
