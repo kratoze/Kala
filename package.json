@@ -26,6 +26,6 @@
     "ijavascript": "^5.1.0"
   },
   "dependencies": {
-    "pixi.js": "^5.0.4"
+    "pixi.js": "^5.1.2"
   }
 }
