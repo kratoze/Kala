@@ -4,6 +4,7 @@ npm-debug.log
 scrap.js
 app.js
 index.html
+.gitignore
 renderPixi.js
 package-lock.json
 fabricrender.js
@@ -13,4 +14,7 @@ Avoid.js
 index2.html
 kala.html
 .tern-project
+.prettierrc.json
+graph.svg
+POLYSCARP.js
 .DS_Store
