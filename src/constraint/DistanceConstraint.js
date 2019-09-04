@@ -31,12 +31,8 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   // scaled in the correct direction
   impulse = distBA.scale(0.5 * diff);
   // apply the impulses to the bodies
-  this.bodyA.velocity = this.bodyA.velocity.add(
-    impulse.scale(this.bodyA.invMass * this.stiffness)
-  );
-  this.bodyB.velocity = this.bodyB.velocity.subtract(
-    impulse.scale(this.bodyB.invMass * this.stiffness)
-  );
+  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness));
+  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness));
 };
 
 /**

@@ -442,9 +442,9 @@ function PixiRender(width, height, theme, scale) {
       this.bodyContainer.removeChild(tempSprite);
     }
   };
+  var graphics = new PIXI.Graphics();
 
   this.drawLine = function(v1, v2) {
-    var graphics = new PIXI.Graphics();
     graphics.clear();
 
     this.lineContainer.addChild(graphics);
@@ -474,15 +474,15 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.drawPolygon(polygon.vertexToPath());
     //polygonGraphics.endFill();
 
-    var midpoint;
-    for (let i = 0; i < polygon.vertex.length - 1; i++) {
-      //render.drawLine(this.vertex[i], this.vertex[i + 1]);
-      midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
-      self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
-    }
-    //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
-    midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
-    self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
+    // var midpoint;
+    // for (let i = 0; i < polygon.vertex.length - 1; i++) {
+    //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+    //   midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
+    //   self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
+    // }
+    // //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
+    // midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
+    // self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
   this.clear = function() {
@@ -492,14 +492,16 @@ function PixiRender(width, height, theme, scale) {
   };
 
   this.update = function(engine) {
-    //if (engine.hasChanged) {
-    this.clear();
-    engine.hasChanged = false;
-    //}
+    if (engine.hasChanged) {
+      this.clear();
+      engine.hasChanged = false;
+    }
 
     var bodies = engine.allBodies;
     var renderBody;
-
+    for (let i = 0; i < engine.allConstraints.length; i++) {
+      this.drawLine(engine.allConstraints[i].bodyA.center, engine.allConstraints[i].bodyB.center);
+    }
     for (let i = 0; i < bodies.length; i++) {
       //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
@@ -516,7 +518,7 @@ function PixiRender(width, height, theme, scale) {
 function Physics() {
   var positionalCorrectionFlag = false;
   // number of relaxtion iterations
-  var relaxationCount = 40;
+  var relaxationCount = 15;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 
@@ -527,7 +529,7 @@ function Physics() {
     for (k = 0; k < relaxationCount; k++) {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
-          if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+          if (engine.allBodies[i].broadphaseTest(engine.allBodies[j])) {
             if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
               if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
                 collisionInfo.changeDir();
@@ -807,6 +809,18 @@ Body.prototype.update = function(engine) {
   }
 };
 
+Body.prototype.broadphaseTest = function(otherShape) {
+  // check if both Bodies have a calculated AABB
+  if (this.ABBB || otherShape.AABB) {
+    if (!this.AABBTest(otherShape)) return false;
+  } else {
+    // if both Bodies don't have an AABB resort to bounding radius
+    if (!this.boundTest(otherShape)) return false;
+  }
+  //console.log(this.type + " collided with a " + otherShape.type);
+  return true;
+};
+
 /**
  * Checks if another Body is within this Body's bounding radius as the first step of the Broad-Phase
  * @param  {Body} otherShape description
@@ -817,11 +831,52 @@ Body.prototype.boundTest = function(otherShape) {
   var rSum = this.boundRadius + otherShape.boundRadius;
   var dist = vFrom1to2.length();
   if (dist > rSum) {
-    //TO DO: CHANGE BACK TO FALSE
-
-    return true; //not overlapping
+    return false; //not overlapping
   }
   return true;
+};
+
+Body.prototype.AABBTest = function(otherShape) {
+  // if(player1.x < player2.x + player2.width &&
+  //   player1.x + player1.width > player2.x &&
+  //   player1.y < player2.y + player2.height &&
+  //   player1.y + player1.height > player2.y)
+  var aabbA = this.AABB;
+  var aabbB = otherShape.AABB;
+  if (
+    aabbA.minBounds.x < aabbB.maxBounds.x &&
+    aabbA.maxBounds.x > aabbB.minBounds.x &&
+    aabbA.minBounds.y < aabbB.maxBounds.y &&
+    aabbA.maxBounds.y > aabbB.minBounds.y
+  ) {
+    // potential collision detected
+    return true;
+  }
+  return false; // no collision
+};
+
+Body.prototype.calculateAABB = function() {
+  var minX = 999999;
+  var maxX = -999999;
+  var minY = 999999;
+  var maxY = -999999;
+  for (let i = 0; i < this.vertex.length; i++) {
+    var vertex = this.vertex[i];
+    if (vertex.x > maxX) {
+      maxX = vertex.x;
+    }
+    if (vertex.x < minX) {
+      minX = vertex.x;
+    }
+    if (vertex.y > maxY) {
+      maxY = vertex.y;
+    }
+    if (vertex.y < minY) {
+      minY = vertex.y;
+    }
+  }
+  var AABB = { minBounds: Vec2(minX, minY), maxBounds: Vec2(maxX, maxY) };
+  return AABB;
 };
 
 /**
@@ -919,6 +974,7 @@ var Polygon = function(vertex, mass, friction, restitution, options) {
   // find the center of the polygon once vertices are set
   var centroid = this.findCentroid();
   Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);
+  // vertices must be in clockwise order for collision detection to work
   this.sortVertices();
 
   this.type = "Polygon";
@@ -926,8 +982,10 @@ var Polygon = function(vertex, mass, friction, restitution, options) {
   this.edges = this.calculateEdges();
   // calculate the normals for each edge and store in an array of Vec2
   this.faceNormal = this.calculateFaceNormals();
-  //this.sortVertices();
 
+  // update AABB and bound radius for broadphase detection
+  this.AABB = this.calculateAABB();
+  this.boundRadius = this.calculateBoundRadius();
   // update the polygon's inertia using the mass
   this.updateInertia();
 };
@@ -946,10 +1004,14 @@ Polygon.prototype.move = function(v) {
   for (let i = 0; i < this.vertex.length; i++) {
     this.vertex[i] = this.vertex[i].add(v);
   }
-  this.edges = this.calculateEdges();
-  this.faceNormal = this.calculateFaceNormals();
   // move the center
   this.center = this.center.add(v);
+
+  // new orientation requires edges and face normals to be calculated again.
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 
@@ -969,6 +1031,8 @@ Polygon.prototype.rotate = function(angle) {
   // new orientation requires edges and face normals to be calculated again.
   this.edges = this.calculateEdges();
   this.faceNormal = this.calculateFaceNormals();
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 
@@ -1007,6 +1071,53 @@ Polygon.prototype.calculateFaceNormals = function() {
     tmpFNormals[i] = this.edges[i].normalize();
   }
   return tmpFNormals;
+};
+
+/**
+ * Calculates the Polygon's Axis Aligned Bounding Box
+ *
+ * @return {Array<Vec2>}  The vertices of the AABB
+ */
+Polygon.prototype.calculateAABB = function() {
+  var minX = 999999;
+  var maxX = -999999;
+  var minY = 999999;
+  var maxY = -999999;
+  for (let i = 0; i < this.vertex.length; i++) {
+    var vertex = this.vertex[i];
+    if (vertex.x > maxX) {
+      maxX = vertex.x;
+    }
+    if (vertex.x < minX) {
+      minX = vertex.x;
+    }
+    if (vertex.y > maxY) {
+      maxY = vertex.y;
+    }
+    if (vertex.y < minY) {
+      minY = vertex.y;
+    }
+  }
+  var AABB = { minBounds: Vec2(minX, minY), maxBounds: Vec2(maxX, maxY) };
+  return AABB;
+};
+
+/**
+ * Calculates the Polygon's smallest possible radius for bound test
+ *
+ * @return {number}  The Polygon's bounding radius
+ */
+Polygon.prototype.calculateBoundRadius = function() {
+  var maxRadius = -99999;
+  var tmpRadius;
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    var vertex = this.vertex[i];
+    tmpRadius = this.center.subtract(vertex).length();
+    if (tmpRadius > maxRadius) {
+      maxRadius = tmpRadius;
+    }
+  }
+  return maxRadius;
 };
 
 /**
@@ -1071,25 +1182,33 @@ Polygon.prototype.findCentroid = function() {
 Polygon.prototype.sortVertices = function() {
   var angleFromCenter;
   var center = this.center;
-  //for (let i = 0; i < this.vertex.length - 1; i++) {
-  // angleFromCenterV1 = this.center.angleFromVector(this.vertex[i]);
-  // angleFromCenterV2 = this.center.angleFromVector(this.vertex[i]);
-
   this.vertex.sort(function(a, b) {
     return a.angleFromVector(center) - b.angleFromVector(center);
   });
-  //  }
 };
 
-var centroidGraphic = new PIXI.Graphics();
-
 Polygon.prototype.draw = function(render) {
-  centroidGraphic.clear();
+  var centroidGraphic = new PIXI.Graphics();
+
+  //centroidGraphic.clear();
   render.app.stage.addChild(centroidGraphic);
-  centroidGraphic.lineStyle(1 / render.scale);
+  //centroidGraphic.lineStyle(1 / render.scale);
 
-  centroidGraphic.drawCircle(this.center.x, this.center.y, 10 / render.scale);
+  //centroidGraphic.drawCircle(this.center.x, this.center.y, 10 / render.scale)
 
+  centroidGraphic.lineStyle(1 / 20, 0x000000);
+
+  // centroidGraphic.drawPolygon([
+  //   this.AABB.minBounds.x,
+  //   this.AABB.minBounds.y,
+  //   this.AABB.maxBounds.x,
+  //   this.AABB.minBounds.y,
+  //   this.AABB.maxBounds.x,
+  //   this.AABB.maxBounds.y,
+  //   this.AABB.minBounds.x,
+  //   this.AABB.maxBounds.y
+  // ]);
+  centroidGraphic.drawCircle(this.center.x, this.center.y, this.boundRadius);
   //render.drawPolygon(this);
   // var midpoint;
   // for (let i = 0; i < this.vertex.length - 1; i++) {
@@ -1170,7 +1289,7 @@ var Rectangle = function(x, y, width, height, mass, friction, restitution, optio
   this.faceNormal[2] = this.faceNormal[2].normalize();
   this.faceNormal[3] = this.vertex[0].subtract(this.vertex[1]);
   this.faceNormal[3] = this.faceNormal[3].normalize();
-
+  this.AABB = this.calculateAABB();
   this.updateInertia();
 };
 
@@ -1291,6 +1410,24 @@ Circle.prototype.updateInertia = function() {
     this.inertia = ((1 / this.invMass) * (this.radius * this.radius)) / 12;
   }
 };
+
+var RegularPoly = function(x, y, radius, sides, mass, friction, restitution, options) {
+  var vertices = [];
+  var center = Vec2(x, y);
+
+  var vertex = Vec2(center.x - radius, center.y);
+  var centralAngle = 360 / sides;
+  centralAngle = centralAngle * (Math.PI / 180);
+  //Side = 2 × Radius × sin(π/n)
+  for (let i = 0; i < sides; i++) {
+    vertices.push(vertex);
+    vertex = vertex.rotate(center, centralAngle);
+  }
+
+  Polygon.call(this, vertices, mass, friction, restitution, options);
+};
+
+Common.extend(RegularPoly, Polygon);
 
 Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
@@ -1520,7 +1657,10 @@ Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Polygon") {
     status = this.collidedPolyPoly(this, otherShape, collisionInfo);
+  } else if (otherShape.type === "Rectangle") {
+    //status = otherShape.collidedRectRect(otherShape, this, collisionInfo);
   }
+
   return status;
 };
 
@@ -1542,7 +1682,6 @@ Polygon.prototype.findInterval = function(normal) {
       min = current;
     }
   }
-
   return { min: min, max: max };
 };
 
@@ -1586,7 +1725,6 @@ Polygon.prototype.polygonOverlaps = function(otherPoly) {
       overlapInfo.minNormal = faceNormal.perp();
     }
   }
-
   return overlapInfo;
 };
 
@@ -1594,7 +1732,6 @@ Polygon.prototype.polygonOverlaps = function(otherPoly) {
 // overlap will yield the penetration vector.
 Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
   var overlap1, overlap2, overlap;
-
   if (polyA.bodyID > polyB.bodyID) {
     var polyTmp = polyB;
     polyB = polyA;
@@ -1614,22 +1751,19 @@ Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
   }
   var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
 
-  this.dotTest = overlap.minNormal.dot(polyB.center.subtract(polyA.center));
-  if (this.dotTest < 0) {
+  var dotTest = overlap.minNormal.dot(polyB.center.subtract(polyA.center));
+  if (dotTest < 0) {
     overlap.minNormal = overlap.minNormal.scale(-1);
     penetrationVector = Vec2(0, 0);
   }
 
-  var supportsA = polyA.findSupportPoints(overlap.minNormal.scale(-1), polyB);
-  //console.log(overlap.minNormal);
-  var supportsB = polyB.findSupportPoints(overlap.minNormal, polyA);
-  //console.log(supportsB);
+  var supportsA = polyA.findSupportPoint(overlap.minNormal.scale(-1), polyB);
+  var supportsB = polyB.findSupportPoint(overlap.minNormal, polyA);
 
   var distance = overlap.minNormal.scale(-1).dot(supportsB[0]);
-  //distance = distance / overlap.minNormal.scale(distance);
   var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
 
-  collisionInfo.setInfo(overlap.minOverlap, overlap.minNormal, supportsB[0]);
+  //collisionInfo.setInfo(overlap.minOverlap, overlap.minNormal, supportsB[0]);
 
   return true;
 };
@@ -1638,7 +1772,7 @@ Polygon.prototype.collidedPolyRect = function() {};
 
 Polygon.prototype.collidedPolyCirc = function() {};
 
-Polygon.prototype.findSupportPoints = function(dir) {
+Polygon.prototype.findSupportPoint = function(dir) {
   //https://www.gamedev.net/forums/topic/453179-point-of-collision/
   var supports = [];
   var count = 0;
@@ -1676,12 +1810,6 @@ Polygon.prototype.findSupportPoints = function(dir) {
     supports[1] = this.vertex[nextIndex];
   }
 
-  //   else if (prevDistance === minDistance) {
-  //     supports[1] = prevIndex;
-  //     console.log("edge");
-  //   } else {
-  //     supports[1] = nextIndex;
-  //   }
   return supports;
 };
 
@@ -1774,12 +1902,8 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   // scaled in the correct direction
   impulse = distBA.scale(0.5 * diff);
   // apply the impulses to the bodies
-  this.bodyA.velocity = this.bodyA.velocity.add(
-    impulse.scale(this.bodyA.invMass * this.stiffness)
-  );
-  this.bodyB.velocity = this.bodyB.velocity.subtract(
-    impulse.scale(this.bodyB.invMass * this.stiffness)
-  );
+  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness));
+  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness));
 };
 
 /**

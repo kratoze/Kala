@@ -2,7 +2,7 @@
 function Physics() {
   var positionalCorrectionFlag = false;
   // number of relaxtion iterations
-  var relaxationCount = 40;
+  var relaxationCount = 15;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 
@@ -13,7 +13,7 @@ function Physics() {
     for (k = 0; k < relaxationCount; k++) {
       for (i = 0; i < engine.allBodies.length; i++) {
         for (j = i + 1; j < engine.allBodies.length; j++) {
-          if (engine.allBodies[i].boundTest(engine.allBodies[j])) {
+          if (engine.allBodies[i].broadphaseTest(engine.allBodies[j])) {
             if (engine.allBodies[i].collisionTest(engine.allBodies[j], collisionInfo)) {
               if (collisionInfo.getNormal().dot(engine.allBodies[j].center.subtract(engine.allBodies[i].center)) < 0) {
                 collisionInfo.changeDir();

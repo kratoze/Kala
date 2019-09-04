@@ -5,6 +5,7 @@ var Polygon = function(vertex, mass, friction, restitution, options) {
   // find the center of the polygon once vertices are set
   var centroid = this.findCentroid();
   Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);
+  // vertices must be in clockwise order for collision detection to work
   this.sortVertices();
 
   this.type = "Polygon";
@@ -12,8 +13,10 @@ var Polygon = function(vertex, mass, friction, restitution, options) {
   this.edges = this.calculateEdges();
   // calculate the normals for each edge and store in an array of Vec2
   this.faceNormal = this.calculateFaceNormals();
-  //this.sortVertices();
 
+  // update AABB and bound radius for broadphase detection
+  this.AABB = this.calculateAABB();
+  this.boundRadius = this.calculateBoundRadius();
   // update the polygon's inertia using the mass
   this.updateInertia();
 };
@@ -32,10 +35,14 @@ Polygon.prototype.move = function(v) {
   for (let i = 0; i < this.vertex.length; i++) {
     this.vertex[i] = this.vertex[i].add(v);
   }
-  this.edges = this.calculateEdges();
-  this.faceNormal = this.calculateFaceNormals();
   // move the center
   this.center = this.center.add(v);
+
+  // new orientation requires edges and face normals to be calculated again.
+  this.edges = this.calculateEdges();
+  this.faceNormal = this.calculateFaceNormals();
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 
@@ -55,6 +62,8 @@ Polygon.prototype.rotate = function(angle) {
   // new orientation requires edges and face normals to be calculated again.
   this.edges = this.calculateEdges();
   this.faceNormal = this.calculateFaceNormals();
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 
@@ -93,6 +102,53 @@ Polygon.prototype.calculateFaceNormals = function() {
     tmpFNormals[i] = this.edges[i].normalize();
   }
   return tmpFNormals;
+};
+
+/**
+ * Calculates the Polygon's Axis Aligned Bounding Box
+ *
+ * @return {Array<Vec2>}  The vertices of the AABB
+ */
+Polygon.prototype.calculateAABB = function() {
+  var minX = 999999;
+  var maxX = -999999;
+  var minY = 999999;
+  var maxY = -999999;
+  for (let i = 0; i < this.vertex.length; i++) {
+    var vertex = this.vertex[i];
+    if (vertex.x > maxX) {
+      maxX = vertex.x;
+    }
+    if (vertex.x < minX) {
+      minX = vertex.x;
+    }
+    if (vertex.y > maxY) {
+      maxY = vertex.y;
+    }
+    if (vertex.y < minY) {
+      minY = vertex.y;
+    }
+  }
+  var AABB = { minBounds: Vec2(minX, minY), maxBounds: Vec2(maxX, maxY) };
+  return AABB;
+};
+
+/**
+ * Calculates the Polygon's smallest possible radius for bound test
+ *
+ * @return {number}  The Polygon's bounding radius
+ */
+Polygon.prototype.calculateBoundRadius = function() {
+  var maxRadius = -99999;
+  var tmpRadius;
+  for (let i = 0; i < this.vertex.length - 1; i++) {
+    var vertex = this.vertex[i];
+    tmpRadius = this.center.subtract(vertex).length();
+    if (tmpRadius > maxRadius) {
+      maxRadius = tmpRadius;
+    }
+  }
+  return maxRadius;
 };
 
 /**
@@ -157,25 +213,33 @@ Polygon.prototype.findCentroid = function() {
 Polygon.prototype.sortVertices = function() {
   var angleFromCenter;
   var center = this.center;
-  //for (let i = 0; i < this.vertex.length - 1; i++) {
-  // angleFromCenterV1 = this.center.angleFromVector(this.vertex[i]);
-  // angleFromCenterV2 = this.center.angleFromVector(this.vertex[i]);
-
   this.vertex.sort(function(a, b) {
     return a.angleFromVector(center) - b.angleFromVector(center);
   });
-  //  }
 };
 
-var centroidGraphic = new PIXI.Graphics();
-
 Polygon.prototype.draw = function(render) {
-  centroidGraphic.clear();
+  var centroidGraphic = new PIXI.Graphics();
+
+  //centroidGraphic.clear();
   render.app.stage.addChild(centroidGraphic);
-  centroidGraphic.lineStyle(1 / render.scale);
+  //centroidGraphic.lineStyle(1 / render.scale);
 
-  centroidGraphic.drawCircle(this.center.x, this.center.y, 10 / render.scale);
+  //centroidGraphic.drawCircle(this.center.x, this.center.y, 10 / render.scale)
 
+  centroidGraphic.lineStyle(1 / 20, 0x000000);
+
+  // centroidGraphic.drawPolygon([
+  //   this.AABB.minBounds.x,
+  //   this.AABB.minBounds.y,
+  //   this.AABB.maxBounds.x,
+  //   this.AABB.minBounds.y,
+  //   this.AABB.maxBounds.x,
+  //   this.AABB.maxBounds.y,
+  //   this.AABB.minBounds.x,
+  //   this.AABB.maxBounds.y
+  // ]);
+  centroidGraphic.drawCircle(this.center.x, this.center.y, this.boundRadius);
   //render.drawPolygon(this);
   // var midpoint;
   // for (let i = 0; i < this.vertex.length - 1; i++) {

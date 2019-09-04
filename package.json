@@ -22,7 +22,8 @@
     "google-closure-compiler": "^20190819.0.0",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
-    "gulp-uglify": "^3.0.2"
+    "gulp-uglify": "^3.0.2",
+    "ijavascript": "^5.1.0"
   },
   "dependencies": {
     "pixi.js": "^5.0.4"

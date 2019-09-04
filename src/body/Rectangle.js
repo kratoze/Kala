@@ -39,7 +39,7 @@ var Rectangle = function(x, y, width, height, mass, friction, restitution, optio
   this.faceNormal[2] = this.faceNormal[2].normalize();
   this.faceNormal[3] = this.vertex[0].subtract(this.vertex[1]);
   this.faceNormal[3] = this.faceNormal[3].normalize();
-
+  this.AABB = this.calculateAABB();
   this.updateInertia();
 };
 

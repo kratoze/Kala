@@ -16,6 +16,7 @@ var kalaFiles = [
   "./src/body/Polygon.js",
   "./src/body/Rectangle.js",
   "./src/body/Circle.js",
+  "./src/body/Shapes.js",
   "./src/body/RectangleCollision.js",
   "./src/body/CircleCollision.js",
   "./src/body/PolygonCollision.js",

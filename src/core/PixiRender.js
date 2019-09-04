@@ -127,9 +127,9 @@ function PixiRender(width, height, theme, scale) {
       this.bodyContainer.removeChild(tempSprite);
     }
   };
+  var graphics = new PIXI.Graphics();
 
   this.drawLine = function(v1, v2) {
-    var graphics = new PIXI.Graphics();
     graphics.clear();
 
     this.lineContainer.addChild(graphics);
@@ -159,15 +159,15 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.drawPolygon(polygon.vertexToPath());
     //polygonGraphics.endFill();
 
-    var midpoint;
-    for (let i = 0; i < polygon.vertex.length - 1; i++) {
-      //render.drawLine(this.vertex[i], this.vertex[i + 1]);
-      midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
-      self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
-    }
-    //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
-    midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
-    self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
+    // var midpoint;
+    // for (let i = 0; i < polygon.vertex.length - 1; i++) {
+    //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
+    //   midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
+    //   self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
+    // }
+    // //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
+    // midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
+    // self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
   this.clear = function() {
@@ -177,14 +177,16 @@ function PixiRender(width, height, theme, scale) {
   };
 
   this.update = function(engine) {
-    //if (engine.hasChanged) {
-    this.clear();
-    engine.hasChanged = false;
-    //}
+    if (engine.hasChanged) {
+      this.clear();
+      engine.hasChanged = false;
+    }
 
     var bodies = engine.allBodies;
     var renderBody;
-
+    for (let i = 0; i < engine.allConstraints.length; i++) {
+      this.drawLine(engine.allConstraints[i].bodyA.center, engine.allConstraints[i].bodyB.center);
+    }
     for (let i = 0; i < bodies.length; i++) {
       //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
