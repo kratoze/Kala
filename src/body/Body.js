@@ -104,7 +104,7 @@ Body.prototype.update = function(engine) {
 
 Body.prototype.broadphaseTest = function(otherShape) {
   // check if both Bodies have a calculated AABB
-  if (this.ABBB || otherShape.AABB) {
+  if (this.AABB && otherShape.AABB) {
     if (!this.AABBTest(otherShape)) return false;
   } else {
     // if both Bodies don't have an AABB resort to bounding radius
@@ -130,10 +130,6 @@ Body.prototype.boundTest = function(otherShape) {
 };
 
 Body.prototype.AABBTest = function(otherShape) {
-  // if(player1.x < player2.x + player2.width &&
-  //   player1.x + player1.width > player2.x &&
-  //   player1.y < player2.y + player2.height &&
-  //   player1.y + player1.height > player2.y)
   var aabbA = this.AABB;
   var aabbB = otherShape.AABB;
   if (
@@ -145,6 +141,7 @@ Body.prototype.AABBTest = function(otherShape) {
     // potential collision detected
     return true;
   }
+
   return false; // no collision
 };
 
@@ -170,6 +167,27 @@ Body.prototype.calculateAABB = function() {
   }
   var AABB = { minBounds: Vec2(minX, minY), maxBounds: Vec2(maxX, maxY) };
   return AABB;
+};
+
+Body.prototype.findInterval = function(normal) {
+  normal = normal.perp();
+  var dotProduct = this.vertex[0].dot(normal);
+  var current;
+
+  var min, max;
+  min = dotProduct;
+  max = min;
+
+  for (let i = 1; i < this.vertex.length; i++) {
+    current = this.vertex[i].dot(normal);
+    if (current > max) {
+      max = current;
+    }
+    if (current < min) {
+      min = current;
+    }
+  }
+  return { min: min, max: max };
 };
 
 /**

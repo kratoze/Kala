@@ -5,9 +5,12 @@ function PixiRender(width, height, theme, scale) {
   this.app = new PIXI.Application({
     height: width,
     width: height,
-    backgroundColor: 0xfcfccf,
+    backgroundColor: 0xd7b7a7,
     antialias: true
   });
+
+  var colors = [0xd9c7f3, 0xf3c7f0, 0x3f417f, 0xdbffda];
+
   this.scale = scale;
   document.body.appendChild(this.app.view);
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
@@ -90,6 +93,8 @@ function PixiRender(width, height, theme, scale) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     if (!polygonGraphics) {
       renderBodies[polygon.bodyID] = new PIXI.Graphics();
+      renderBodies[polygon.bodyID].color = colors[Math.floor(Math.random() * colors.length)];
+
       this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
       polygonGraphics = renderBodies[polygon.bodyID];
     }
@@ -153,11 +158,11 @@ function PixiRender(width, height, theme, scale) {
   this.updatePolygon = function(polygon) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     polygonGraphics.clear();
-    polygonGraphics.lineStyle(1 / scale, polygon.lineColor || 0x03f8fc);
+    polygonGraphics.lineStyle(0 / scale, polygon.lineColor || 0x03f8fc);
     polygonGraphics.lineColor;
-    //polygonGraphics.beginFill(0x3500fa, 1);
+    polygonGraphics.beginFill(renderBodies[polygon.bodyID].color, 1);
     polygonGraphics.drawPolygon(polygon.vertexToPath());
-    //polygonGraphics.endFill();
+    polygonGraphics.endFill();
 
     // var midpoint;
     // for (let i = 0; i < polygon.vertex.length - 1; i++) {

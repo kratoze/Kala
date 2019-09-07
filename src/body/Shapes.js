@@ -1,7 +1,6 @@
 var RegularPoly = function(x, y, radius, sides, mass, friction, restitution, options) {
   var vertices = [];
   var center = Vec2(x, y);
-
   var vertex = Vec2(center.x - radius, center.y);
   var centralAngle = 360 / sides;
   centralAngle = centralAngle * (Math.PI / 180);

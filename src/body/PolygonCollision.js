@@ -4,78 +4,14 @@ Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   if (otherShape.type === "Polygon") {
     status = this.collidedPolyPoly(this, otherShape, collisionInfo);
   } else if (otherShape.type === "Rectangle") {
-    //status = otherShape.collidedRectRect(otherShape, this, collisionInfo);
+    status = this.collidedPolyRect(this, otherShape, collisionInfo);
+  } else if (otherShape.type === "Circle") {
+    status = this.collidedPolyCirc(otherShape, collisionInfo);
   }
 
   return status;
 };
 
-Polygon.prototype.findInterval = function(normal) {
-  normal = normal.perp();
-  var dotProduct = this.vertex[0].dot(normal);
-  var current;
-
-  var min, max;
-  min = dotProduct;
-  max = min;
-
-  for (let i = 1; i < this.vertex.length; i++) {
-    current = this.vertex[i].dot(normal);
-    if (current > max) {
-      max = current;
-    }
-    if (current < min) {
-      min = current;
-    }
-  }
-  return { min: min, max: max };
-};
-
-Polygon.prototype.polygonOverlaps = function(otherPoly) {
-  var polyConfig1, polyConfig2, faceNormal, overlap;
-  var dir;
-  var minOverlap = 999999;
-  var minNormal;
-
-  var overlapInfo = {
-    minNormal: null,
-    minOverlap: 999999
-  };
-
-  for (let i = 0; i < this.faceNormal.length; i++) {
-    faceNormal = this.faceNormal[i];
-    polyConfig1 = this.findInterval(faceNormal);
-    polyConfig2 = otherPoly.findInterval(faceNormal);
-    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
-    if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
-      this.lineColor = null;
-      return false;
-    }
-    if (overlap < overlapInfo.minOverlap) {
-      overlapInfo.minOverlap = overlap;
-      overlapInfo.minNormal = faceNormal.perp();
-    }
-  }
-
-  for (let i = 0; i < otherPoly.faceNormal.length; i++) {
-    faceNormal = otherPoly.faceNormal[i];
-    polyConfig1 = this.findInterval(faceNormal);
-    polyConfig2 = otherPoly.findInterval(faceNormal);
-    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
-    if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
-      this.lineColor = null;
-      return false;
-    }
-    if (overlap < overlapInfo.minOverlap) {
-      overlapInfo.minOverlap = overlap;
-      overlapInfo.minNormal = faceNormal.perp();
-    }
-  }
-  return overlapInfo;
-};
-
-// The normalized axis multiplied with the shortest
-// overlap will yield the penetration vector.
 Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
   var overlap1, overlap2, overlap;
   if (polyA.bodyID > polyB.bodyID) {
@@ -84,44 +20,116 @@ Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
     polyA = polyTmp;
   }
 
-  overlap1 = polyA.polygonOverlaps(polyB);
-  overlap2 = polyB.polygonOverlaps(polyA);
+  overlap = polyA.polygonOverlaps(polyB);
 
-  if (!overlap1 || !overlap2) {
-    return false;
-  }
-  if (overlap1.minOverlap < overlap2.minOverlap) {
-    overlap = overlap1;
-  } else {
-    overlap = overlap2;
-  }
-  var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
+  if (!overlap) return false;
 
   var dotTest = overlap.minNormal.dot(polyB.center.subtract(polyA.center));
   if (dotTest < 0) {
     overlap.minNormal = overlap.minNormal.scale(-1);
-    penetrationVector = Vec2(0, 0);
   }
 
-  var supportsA = polyA.findSupportPoint(overlap.minNormal.scale(-1), polyB);
-  var supportsB = polyB.findSupportPoint(overlap.minNormal, polyA);
-
-  var distance = overlap.minNormal.scale(-1).dot(supportsB[0]);
-  var penetrationVector = overlap.minNormal.perp().scale(overlap.minOverlap);
-
-  //collisionInfo.setInfo(overlap.minOverlap, overlap.minNormal, supportsB[0]);
+  var supportsB = polyB.findSupportPoint(overlap.minNormal);
+  collisionInfo.setInfo(overlap.minOverlap, overlap.minNormal, supportsB[0]);
 
   return true;
 };
 
-Polygon.prototype.collidedPolyRect = function() {};
+Polygon.prototype.collidedPolyCirc = function(otherCirc, collisionInfo) {
+  var faceNormal;
 
-Polygon.prototype.collidedPolyCirc = function() {};
+  for (let i = 0; i < this.faceNormal.length; i++) {
+    faceNormal = this.faceNormal[i];
+    var vToCirc = faceNormal.subtract(otherCirc.center);
+    var distance = otherCirc.center.dot(faceNormal);
+    if (distance < otherCirc.radius) {
+      collisionInfo.setInfo(distance - otherCirc.radius, Vec2(0, -1), otherCirc.center);
+
+      return false;
+    }
+  }
+  return true;
+};
+
+Polygon.prototype.collidedPolyRect = function(polyA, rectB, collisionInfo) {
+  if (polyA.bodyID > rectB.bodyID) {
+    console.log("here");
+  }
+
+  var overlapInfo = {
+    minNormal: null,
+    minOverlap: 999999
+  };
+
+  if (!this.projectOntoAxes(polyA, rectB, overlapInfo) || !this.projectOntoAxes(rectB, polyA, overlapInfo)) {
+    return false;
+  }
+
+  var dotTest = overlapInfo.minNormal.dot(rectB.center.subtract(polyA.center));
+  if (dotTest < 0) {
+    overlapInfo.minNormal = overlapInfo.minNormal.scale(-1);
+  }
+
+  var supportsA = polyA.findSupportPoint(overlapInfo.minNormal.scale(-1));
+  var supportsB = rectB.findSupportPoint(overlapInfo.minNormal, supportsA[0]);
+  var penetrationVector = overlapInfo.minNormal.scale(overlapInfo.minOverlap);
+
+  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal, supportsB);
+
+  return true;
+};
+
+Polygon.prototype.polygonOverlaps = function(otherPoly) {
+  var overlapInfo = {
+    minNormal: null,
+    minOverlap: 999999
+  };
+
+  if (!this.projectOntoAxes(this, otherPoly, overlapInfo) || !otherPoly.projectOntoAxes(this, otherPoly, overlapInfo)) {
+    return false;
+  }
+
+  return overlapInfo;
+};
+
+Polygon.prototype.projectOntoAxes = function(polyA, polyB, overlapInfo) {
+  var polyConfig1, polyConfig2, faceNormal, overlap;
+
+  for (let i = 0; i < polyA.faceNormal.length; i++) {
+    faceNormal = polyA.faceNormal[i];
+    polyConfig1 = polyA.findInterval(faceNormal);
+    polyConfig2 = polyB.findInterval(faceNormal);
+    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
+    if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
+      this.lineColor = null;
+      return false;
+    }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
+  }
+
+  for (let i = 0; i < polyB.faceNormal.length; i++) {
+    faceNormal = polyB.faceNormal[i];
+    polyConfig1 = polyA.findInterval(faceNormal);
+    polyConfig2 = polyB.findInterval(faceNormal);
+    overlap = Math.min(polyConfig1.max - polyConfig2.min, polyConfig2.max - polyConfig1.min);
+    if (polyConfig2.max < polyConfig1.min || polyConfig1.max < polyConfig2.min) {
+      this.lineColor = null;
+      return false;
+    }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
+  }
+  return true;
+};
 
 Polygon.prototype.findSupportPoint = function(dir) {
   //https://www.gamedev.net/forums/topic/453179-point-of-collision/
   var supports = [];
-  var count = 0;
   var minDistance = 99999;
   var distance, vertex, index;
   for (let i = 0; i < this.vertex.length; i++) {
@@ -140,14 +148,11 @@ Polygon.prototype.findSupportPoint = function(dir) {
   prevDistance = vertex.dot(dir);
   vertex = this.vertex[nextIndex];
   nextDistance = vertex.dot(dir);
-  //console.log("minDist:" + minDistance + " prevDistance: " + nextDistance);
-  if (prevDistance === minDistance) {
-    //console.log("edge");
 
+  if (prevDistance === minDistance) {
     // support points are colinear, they form an edge
     supports[1] = this.vertex[prevIndex];
   } else if (nextDistance === minDistance) {
-    //console.log("edge");
     // support points are colinear, they form an edge
     supports[1] = this.vertex[nextIndex];
   } else if (prevDistance < nextDistance) {

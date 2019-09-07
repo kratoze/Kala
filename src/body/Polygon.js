@@ -1,7 +1,7 @@
-var Polygon = function(vertex, mass, friction, restitution, options) {
+var Polygon = function(vertices, mass, friction, restitution, options) {
   var self = this;
   // vertex is an array of Vec2
-  this.vertex = vertex.slice();
+  this.vertex = vertices.slice();
   // find the center of the polygon once vertices are set
   var centroid = this.findCentroid();
   Body.call(this, centroid.x, centroid.y, mass, friction, restitution, options);

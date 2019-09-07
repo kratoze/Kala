@@ -52,7 +52,9 @@ var squarePolygon2 = new Polygon(squarePolygonPoints2, 0, 0.2, 0.2);
 //squarePolygon.move(Vec2(3, 4));
 // squarePolygon.rotate(0.7);
 //squarePolygon2.rotate(0.7);
-//engine.add(triangle);
+var triangle = new Polygon(triangleVertices, 10, 0.3, 0.2, { dampen: true, dampenValue: 0.999 });
+
+engine.add(triangle);
 
 //engine.add(squarePolygon);
 
@@ -65,30 +67,30 @@ for (let i = 0; i < 3; i++) {
   for (let j = 0; j < 3; j++) {
     // squares.push(new Polygon(squarePolygonPoints, 0.2, 0.3, 0.2));
     // squares[squares.length - 1].move(Vec2(i * 3 + 2, j * 3 + 10));
-    engine.add(new RegularPoly(50 / 20 + i * 3, 250 / 20 + j * 3, 1, 6, 1, 1, 0.2));
+    //engine.add(new RegularPoly(150 / 20 + i, 100 / 20 + j, 1, 4, 1, 0.2, 0.2));
   }
 }
-var hex = new RegularPoly(5, 5, 1, 6, 1, 1, 0.2);
-engine.add(hex);
-var anchorSquare = new Polygon(squarePolygonPoints, 0.5, 2, 0.2);
-var triangle = new Polygon(triangleVertices, 10, 0.3, 0.2, { dampen: true, dampenValue: 0.999 });
+// var hex = new RegularPoly(5, 5, 1, 6, 1, 1, 0.2);
+// engine.add(hex);
+// var anchorSquare = new Polygon(squarePolygonPoints, 0, 2, 0.2);
 //triangle.move(Vec2(0, 0));
 //engine.add(triangle);
-//engine.add(anchorSquare);
-//anchorSquare.move(Vec2(10, 0));
+
+// engine.add(anchorSquare);
+// anchorSquare.move(Vec2(10, 0));
 
 // for (let i = 0; i < 30; i++) {
 //   engine.add(new RegularPoly(50 / 20 + i * 4, 250 / 20, 1, 3, 1, 0.2, 0.2));
 // }
-var rod = new DistanceConstraint(anchorSquare, triangle, 15, 5);
-//engine.addConstraint(rod);
-
+// var rod = new DistanceConstraint(anchorSquare, triangle, 15, 0.8);
+// engine.addConstraint(rod);
+var rect = new Rectangle(10, 20, 30, 3, 0, 0.2, 0.2);
 render.loader.onComplete.add(() => {
   engine.initializeEngineCore(render);
-  engine.add(squares);
+  engine.add(rect);
+  //engine.add(squares);
   //engine.movement = true;
 });
-
 document.addEventListener("keydown", function(e) {
   //Player Controls
 
@@ -108,6 +110,13 @@ document.addEventListener("keydown", function(e) {
     hex.addAcceleration(Vec2(0, 40));
     console.log("jump");
   }
+  if (e.keyCode == 32) {
+    if (engine.movement) {
+      engine.movement = false;
+    } else {
+      engine.movement = true;
+    }
+  }
 });
 
 document.addEventListener("keyup", function(e) {
@@ -123,3 +132,27 @@ document.addEventListener("keyup", function(e) {
     hex.acceleration = Vec2(0, 10);
   }
 });
+
+var canvas = document.getElementsByTagName("canvas")[0];
+
+canvas.addEventListener("mousedown", event => {
+  createPolygon(event);
+});
+
+canvas.addEventListener("mouseup", event => {});
+
+function createPolygon(event) {
+  event.preventDefault();
+  engine.add(
+    new RegularPoly(
+      Math.floor(event.clientX / 20),
+      Math.floor(event.clientY / 20),
+      Math.floor(Math.random() * 3) + 0.5,
+      Math.floor(Math.random() * 7 + 3),
+      1,
+      0.2,
+      0.3
+    )
+  );
+}
+//engine.events.addCustomEvent(createPolygon(event));

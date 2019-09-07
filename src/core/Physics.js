@@ -1,6 +1,6 @@
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
 function Physics() {
-  var positionalCorrectionFlag = false;
+  var positionalCorrectionFlag = true;
   // number of relaxtion iterations
   var relaxationCount = 15;
   // percentafe of separation to project objects
@@ -25,7 +25,7 @@ function Physics() {
                 collisionInfo.bodyBIndex = j;
                 return collisionInfo;
               } else {
-                render.drawLine(collisionInfo.start, collisionInfo.end);
+                //render.drawLine(collisionInfo.start, collisionInfo.end);
                 resolveCollision(engine.allBodies[i], engine.allBodies[j], collisionInfo);
               }
             }

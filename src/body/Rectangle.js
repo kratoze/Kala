@@ -56,6 +56,8 @@ Rectangle.prototype.move = function(v) {
     this.vertex[i] = this.vertex[i].add(v);
   }
   this.center = this.center.add(v);
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 /**
@@ -78,6 +80,8 @@ Rectangle.prototype.rotate = function(angle) {
   this.faceNormal[2] = this.faceNormal[2].normalize();
   this.faceNormal[3] = this.vertex[0].subtract(this.vertex[1]);
   this.faceNormal[3] = this.faceNormal[3].normalize();
+  this.AABB = this.calculateAABB();
+
   return this;
 };
 /**

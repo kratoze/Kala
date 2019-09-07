@@ -17,8 +17,11 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   var impulse;
   // get the vector between the two bodies
   var distBA = this.bodyB.center.subtract(this.bodyA.center);
-  // find the length of the vector bettwee B and A
+  // find the length of the vector between B and A
   var lengthBA = distBA.length();
+  if (lengthBA < this.length) {
+    return;
+  }
   // find the difference between the length and the contraint length.
   // improvements taken from Advanced Character Physics by Thomas Jakobsen
   // where the difference is divided by the length to make the impulse less drastic

@@ -2,8 +2,10 @@ Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Circle") {
     status = this.collidedRectCirc(otherShape, collisionInfo);
-  } else {
+  } else if (otherShape.type === "Rectangle") {
     status = this.collidedRectRect(this, otherShape, collisionInfo);
+  } else if (otherShape.type === "Polygon") {
+    status = otherShape.collidedPolyRect(otherShape, this, collisionInfo);
   }
   return status;
 };
@@ -26,6 +28,7 @@ Rectangle.prototype.findSupportPoint = function(dir, ptOnEdge) {
       tmpSupport.supportPointDist = projection;
     }
   }
+  return tmpSupport.supportPoint;
 };
 
 Rectangle.prototype.findAxisLeastPenetration = function(otherRect, collisionInfo) {
