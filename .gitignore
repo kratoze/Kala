@@ -3,7 +3,6 @@ node_modules/*
 npm-debug.log
 scrap.js
 app.js
-index.html
 renderPixi.js
 package-lock.json
 fabricrender.js
