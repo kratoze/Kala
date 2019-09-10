@@ -1,5 +1,10 @@
 /**
+ * @namespace Core
+ */
+
+/**
  * Engine - The core engine where all Bodies and Constraints are managed. Contains the main engine loop.
+ * @memberof Core
  * @class
  */
 function Engine() {

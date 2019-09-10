@@ -1,8 +1,13 @@
 var bodyIndex = new Indexer();
 
 /**
+ * @namespace Bodies
+ */
+
+/**
  * Body   A Rigid Body, inherited by Rectangle and Circle
  * @class
+ * @memberof Bodies
  * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
  * @param  {number} y                 The Y coordinate of the center of the Body, converted to Vec2
  * @param  {number} mass="1"          The Body's mass
@@ -102,6 +107,13 @@ Body.prototype.update = function(engine) {
   }
 };
 
+/**
+ * Broadphase collision test, compares Bodies' AABBs to check for potential collisions.
+ * Compares Bodies' bounding radii if AABBs are not present on both Bodies.
+ *
+ * @param  {Body} otherShape The Body being tested for collision
+ * @return {bool}            True if a potential collision is detected
+ */
 Body.prototype.broadphaseTest = function(otherShape) {
   // check if both Bodies have a calculated AABB
   if (this.AABB && otherShape.AABB) {
@@ -129,6 +141,12 @@ Body.prototype.boundTest = function(otherShape) {
   return true;
 };
 
+/**
+ * Tests if another Body is within this Body's AABB
+ *
+ * @param  {Body} otherShape The Body being tested for collision
+ * @return {bool}            Returns true if a potential collision has been detected
+ */
 Body.prototype.AABBTest = function(otherShape) {
   var aabbA = this.AABB;
   var aabbB = otherShape.AABB;
@@ -145,6 +163,11 @@ Body.prototype.AABBTest = function(otherShape) {
   return false; // no collision
 };
 
+/**
+ * Calculates the Body's Axis Aligned Bounding Box used for broadphase detection
+ *
+ * @return {AABB}  The minimum x and y and the maximum x and y that can contain this Body
+ */
 Body.prototype.calculateAABB = function() {
   var minX = 999999;
   var maxX = -999999;
@@ -169,9 +192,16 @@ Body.prototype.calculateAABB = function() {
   return AABB;
 };
 
+/**
+ * Finds the minumum and maximum distance between a given normal for all vertices of the Body
+ *
+ * @param  {Vec2} normal The normal, or axis, to be projected on to
+ * @return {Object}      Returns the min and max distances
+ */
 Body.prototype.findInterval = function(normal) {
   normal = normal.perp();
-  var dotProduct = this.vertex[0].dot(normal);
+  var vertex = this.vertex[0];
+  var dotProduct = vertex.dot(normal);
   var current;
 
   var min, max;

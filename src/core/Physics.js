@@ -1,4 +1,11 @@
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
+
+/**
+ * Physics - Calculates and maintains collision resolution and constraints.
+ * @memberof Core
+ * @class
+ * @return {type}  description
+ */
 function Physics() {
   var positionalCorrectionFlag = true;
   // number of relaxtion iterations
@@ -131,7 +138,6 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
-    //console.log(impulse);
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;

@@ -32,3 +32,24 @@ Circle.prototype.collidedCircCirc = function(c1, c2, collisionInfo) {
   }
   return true;
 };
+
+Circle.prototype.findInterval = function(normal) {
+  normal = normal.perp();
+  var dotProduct = this.center.dot(normal);
+  var current;
+
+  var min, max;
+  min = dotProduct;
+  max = min;
+
+  // for (let i = 1; i < this.vertex.length; i++) {
+  //   current = this.vertex[i].dot(normal);
+  //   if (current > max) {
+  //     max = current;
+  //   }
+  //   if (current < min) {
+  //     min = current;
+  //   }
+  // }
+  return { min: min, max: max };
+};

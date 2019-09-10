@@ -1,3 +1,19 @@
+/**
+ * Polygon - A convex polygon made up of vertices
+ * @memberof Bodies
+ * @class
+ * @extends Body
+ * @category Shapes
+ * @param  {Array<Vec2>} vertices     The vertex points that make up the Polygon. Must result in a convex, nondegenerate shape
+ * @param  {number} mass="1"          The Body's mass
+ * @param  {number} friction="0.8"    The friction coefficient, between 0 and 1 is best
+ * @param  {number} restitution="0.2" The restitution coefficient, or bounciness, between 0 and 1 is best
+ * @param  {object} [options]
+ * @param  {boolean} [options.isSensor="false"] If set to true the Body will not resolve collisions
+ * @param  {string} [options.name]    The name of the Body
+ * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
+ * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
+ */
 var Polygon = function(vertices, mass, friction, restitution, options) {
   var self = this;
   // vertex is an array of Vec2
@@ -53,7 +69,6 @@ Polygon.prototype.move = function(v) {
  * @param  {number} angle description
  */
 Polygon.prototype.rotate = function(angle) {
-  //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
   for (let i = 0; i < this.vertex.length; i++) {

@@ -1,3 +1,12 @@
+/**
+ * PixiRender - Uses Pixi.js to render the Engine's bodies and constraints
+ *  @memberof Core
+ * @class
+ * @param  {number} width  The width of the canvas
+ * @param  {number} height The height of the canvas
+ * @param  {String} theme="stone"  The theme of the render as a string: space, stone, pool
+ * @param  {number} scale  The amount the renderer is scaled by
+ */
 function PixiRender(width, height, theme, scale) {
   var self = this;
 
@@ -72,6 +81,12 @@ function PixiRender(width, height, theme, scale) {
   this.app.stage.addChild(this.bodyContainer);
   this.app.stage.addChild(this.lineContainer);
 
+  /**
+   * Adds a Rectangle to the renderer
+   *
+   * @param  {Rectangle} rect The Rectangle to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addRectangle = function(rect) {
     renderBodies[rect.bodyID] = new PIXI.Sprite(rect.render.texture || sprites.rectTexture);
     renderBodies[rect.bodyID].anchor.x = renderBodies[rect.bodyID].anchor.y = 0.5;
@@ -80,6 +95,12 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[rect.bodyID];
   };
 
+  /**
+   * Adds a Circle to the renderer
+   *
+   * @param  {Circle} circ The circle to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addCircle = function(circ) {
     renderBodies[circ.bodyID] = new PIXI.Sprite(circ.render.texture || sprites.circleTexture);
     renderBodies[circ.bodyID].anchor.x = renderBodies[circ.bodyID].anchor.y = 0.5;
@@ -89,6 +110,12 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[circ.bodyID];
   };
 
+  /**
+   * Adds a Polygon to the renderer
+   *
+   * @param  {Polygon} polygon The Polygon to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addPolygon = function(polygon) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     if (!polygonGraphics) {
@@ -103,6 +130,11 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[polygon.bodyID];
   };
 
+  /**
+   * Adds a Body to the renderer - checks the Body's type then calls the appropriate "add" method
+   *
+   * @param  {Body} body The Body to be rendered
+   */
   this.addShape = function(body) {
     switch (body.type) {
       case "Rectangle":
@@ -116,6 +148,11 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
+  /**
+   * Adds the provided Bodies to the renderer
+   *
+   * @param  {Array<Body>} bodies An array of Bodies to be added to the renderer
+   */
   this.addSprites = function(bodies) {
     if (Array.isArray(bodies)) {
       for (let i = 0; i < bodies.length; i++) {
@@ -126,14 +163,28 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
+  /**
+   * Removes a Sprite by the index provided.
+   * Passing in an Engine Body's "bodyID" will work to delete that Body from the renderer
+   *
+   *
+   * @param  {number} index The index of the Body being deleted from the renderer
+   */
   this.removeSprite = function(index) {
     var tempSprite = this.bodyContainer.getChildAt(index);
     if (tempSprite != undefined) {
       this.bodyContainer.removeChild(tempSprite);
     }
   };
+
   var graphics = new PIXI.Graphics();
 
+  /**
+   * Draws a black line between 2 Vectors
+   *
+   * @param  {Vec2} v1 The first Vector point
+   * @param  {Vec2} v2 The second Vector point
+   */
   this.drawLine = function(v1, v2) {
     graphics.clear();
 
@@ -144,8 +195,12 @@ function PixiRender(width, height, theme, scale) {
     graphics.lineTo(v2.x, v2.y);
   };
 
-  this.renderEdge = function(v1, v2) {};
-
+  /**
+   * Updates the position and rotation of a sprite
+   * Used for Rectangle and Circle sprites
+   *
+   * @param  {Body} body The Body
+   */
   this.updateBody = function(body) {
     var renderBody = renderBodies[body.bodyID];
     renderBody.position.x = body.center.x;
@@ -155,6 +210,11 @@ function PixiRender(width, height, theme, scale) {
     renderBody.rotation = body.angle;
   };
 
+  /**
+   * Updates the position and roatation of a Polygon
+   * Used for Polygon sprites
+   * @param  {Polygon} polygon The Polygon Body
+   */
   this.updatePolygon = function(polygon) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     polygonGraphics.clear();
@@ -163,24 +223,22 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.beginFill(renderBodies[polygon.bodyID].color, 1);
     polygonGraphics.drawPolygon(polygon.vertexToPath());
     polygonGraphics.endFill();
-
-    // var midpoint;
-    // for (let i = 0; i < polygon.vertex.length - 1; i++) {
-    //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
-    //   midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
-    //   self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
-    // }
-    // //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
-    // midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
-    // self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
+  /**
+   * Deletes everything held within the PIXI contatiners, removing all render bodies and lines
+   */
   this.clear = function() {
     renderBodies = {};
     this.bodyContainer.removeChildren();
     this.lineContainer.removeChildren();
   };
 
+  /**
+   * Updates the positions and rotation of all renders bodies and constraint links
+   *
+   * @param  {Engine} engine The being rendered
+   */
   this.update = function(engine) {
     if (engine.hasChanged) {
       this.clear();
@@ -193,13 +251,11 @@ function PixiRender(width, height, theme, scale) {
       this.drawLine(engine.allConstraints[i].bodyA.center, engine.allConstraints[i].bodyB.center);
     }
     for (let i = 0; i < bodies.length; i++) {
-      //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
       if (!renderBody) {
         renderBody = this.addShape(bodies[i]);
       }
       renderBody.renderUpdate(bodies[i]);
-      //this.updateBody(bodies[i]);
     }
   };
 }

@@ -1,3 +1,8 @@
+var SupportStruct = function() {
+  this.supportPoint = null;
+  this.supportPointDist = 0;
+};
+
 Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Circle") {

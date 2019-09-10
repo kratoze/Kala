@@ -1,6 +1,11 @@
 /**
+ * @namespace Math
+ */
+
+/**
  * Vec2 - A 2D Vector. Does not reuquire the 'new' keyword when instantiating
  * @class
+ * @memberof Math
  * @param  {type} x The X value
  * @param  {type} y The Y value
  */

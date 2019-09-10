@@ -1,5 +1,6 @@
 /**
  * Rectangle - A rectangular Body
+ * @memberof Bodies
  * @class
  * @extends Body
  * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2

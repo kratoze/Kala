@@ -10,7 +10,6 @@ var kalaFiles = [
   "./src/core/Common.js",
   "./src/core/Indexer.js",
   "./src/core/Events.js",
-  "./src/math/SupportStruct.js",
   "./src/body/Body.js",
   "./src/body/CollisionInfo.js",
   "./src/body/Polygon.js",

@@ -1,6 +1,11 @@
 /**
+ * @namespace Math
+ */
+
+/**
  * Vec2 - A 2D Vector. Does not reuquire the 'new' keyword when instantiating
  * @class
+ * @memberof Math
  * @param  {type} x The X value
  * @param  {type} y The Y value
  */
@@ -162,7 +167,12 @@ Vec2.prototype.angleFromVector = function(vec) {
 };
 
 /**
+ * @namespace Core
+ */
+
+/**
  * Engine - The core engine where all Bodies and Constraints are managed. Contains the main engine loop.
+ * @memberof Core
  * @class
  */
 function Engine() {
@@ -313,6 +323,15 @@ function Engine() {
   };
 }
 
+/**
+ * PixiRender - Uses Pixi.js to render the Engine's bodies and constraints
+ *  @memberof Core
+ * @class
+ * @param  {number} width  The width of the canvas
+ * @param  {number} height The height of the canvas
+ * @param  {String} theme="stone"  The theme of the render as a string: space, stone, pool
+ * @param  {number} scale  The amount the renderer is scaled by
+ */
 function PixiRender(width, height, theme, scale) {
   var self = this;
 
@@ -387,6 +406,12 @@ function PixiRender(width, height, theme, scale) {
   this.app.stage.addChild(this.bodyContainer);
   this.app.stage.addChild(this.lineContainer);
 
+  /**
+   * Adds a Rectangle to the renderer
+   *
+   * @param  {Rectangle} rect The Rectangle to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addRectangle = function(rect) {
     renderBodies[rect.bodyID] = new PIXI.Sprite(rect.render.texture || sprites.rectTexture);
     renderBodies[rect.bodyID].anchor.x = renderBodies[rect.bodyID].anchor.y = 0.5;
@@ -395,6 +420,12 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[rect.bodyID];
   };
 
+  /**
+   * Adds a Circle to the renderer
+   *
+   * @param  {Circle} circ The circle to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addCircle = function(circ) {
     renderBodies[circ.bodyID] = new PIXI.Sprite(circ.render.texture || sprites.circleTexture);
     renderBodies[circ.bodyID].anchor.x = renderBodies[circ.bodyID].anchor.y = 0.5;
@@ -404,6 +435,12 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[circ.bodyID];
   };
 
+  /**
+   * Adds a Polygon to the renderer
+   *
+   * @param  {Polygon} polygon The Polygon to be rendered
+   * @return {Object}      The Body's renderer reference
+   */
   this.addPolygon = function(polygon) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     if (!polygonGraphics) {
@@ -418,6 +455,11 @@ function PixiRender(width, height, theme, scale) {
     return renderBodies[polygon.bodyID];
   };
 
+  /**
+   * Adds a Body to the renderer - checks the Body's type then calls the appropriate "add" method
+   *
+   * @param  {Body} body The Body to be rendered
+   */
   this.addShape = function(body) {
     switch (body.type) {
       case "Rectangle":
@@ -431,6 +473,11 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
+  /**
+   * Adds the provided Bodies to the renderer
+   *
+   * @param  {Array<Body>} bodies An array of Bodies to be added to the renderer
+   */
   this.addSprites = function(bodies) {
     if (Array.isArray(bodies)) {
       for (let i = 0; i < bodies.length; i++) {
@@ -441,14 +488,28 @@ function PixiRender(width, height, theme, scale) {
     }
   };
 
+  /**
+   * Removes a Sprite by the index provided.
+   * Passing in an Engine Body's "bodyID" will work to delete that Body from the renderer
+   *
+   *
+   * @param  {number} index The index of the Body being deleted from the renderer
+   */
   this.removeSprite = function(index) {
     var tempSprite = this.bodyContainer.getChildAt(index);
     if (tempSprite != undefined) {
       this.bodyContainer.removeChild(tempSprite);
     }
   };
+
   var graphics = new PIXI.Graphics();
 
+  /**
+   * Draws a black line between 2 Vectors
+   *
+   * @param  {Vec2} v1 The first Vector point
+   * @param  {Vec2} v2 The second Vector point
+   */
   this.drawLine = function(v1, v2) {
     graphics.clear();
 
@@ -459,8 +520,12 @@ function PixiRender(width, height, theme, scale) {
     graphics.lineTo(v2.x, v2.y);
   };
 
-  this.renderEdge = function(v1, v2) {};
-
+  /**
+   * Updates the position and rotation of a sprite
+   * Used for Rectangle and Circle sprites
+   *
+   * @param  {Body} body The Body
+   */
   this.updateBody = function(body) {
     var renderBody = renderBodies[body.bodyID];
     renderBody.position.x = body.center.x;
@@ -470,6 +535,11 @@ function PixiRender(width, height, theme, scale) {
     renderBody.rotation = body.angle;
   };
 
+  /**
+   * Updates the position and roatation of a Polygon
+   * Used for Polygon sprites
+   * @param  {Polygon} polygon The Polygon Body
+   */
   this.updatePolygon = function(polygon) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     polygonGraphics.clear();
@@ -478,24 +548,22 @@ function PixiRender(width, height, theme, scale) {
     polygonGraphics.beginFill(renderBodies[polygon.bodyID].color, 1);
     polygonGraphics.drawPolygon(polygon.vertexToPath());
     polygonGraphics.endFill();
-
-    // var midpoint;
-    // for (let i = 0; i < polygon.vertex.length - 1; i++) {
-    //   //render.drawLine(this.vertex[i], this.vertex[i + 1]);
-    //   midpoint = polygon.vertex[i].midpoint(polygon.vertex[i + 1]);
-    //   self.drawLine(midpoint, midpoint.add(polygon.faceNormal[i].scale(10 / scale)));
-    // }
-    // //render.drawLine(polygon.vertex[0], polygon.vertex[polygon.vertex.length - 1]);
-    // midpoint = polygon.vertex[0].midpoint(polygon.vertex[polygon.vertex.length - 1]);
-    // self.drawLine(midpoint, midpoint.add(polygon.faceNormal[polygon.faceNormal.length - 1].scale(10 / scale)));
   };
 
+  /**
+   * Deletes everything held within the PIXI contatiners, removing all render bodies and lines
+   */
   this.clear = function() {
     renderBodies = {};
     this.bodyContainer.removeChildren();
     this.lineContainer.removeChildren();
   };
 
+  /**
+   * Updates the positions and rotation of all renders bodies and constraint links
+   *
+   * @param  {Engine} engine The being rendered
+   */
   this.update = function(engine) {
     if (engine.hasChanged) {
       this.clear();
@@ -508,18 +576,23 @@ function PixiRender(width, height, theme, scale) {
       this.drawLine(engine.allConstraints[i].bodyA.center, engine.allConstraints[i].bodyB.center);
     }
     for (let i = 0; i < bodies.length; i++) {
-      //bodies[i].draw(this);
       renderBody = renderBodies[bodies[i].bodyID];
       if (!renderBody) {
         renderBody = this.addShape(bodies[i]);
       }
       renderBody.renderUpdate(bodies[i]);
-      //this.updateBody(bodies[i]);
     }
   };
 }
 
 //  https://github.com/Apress/building-a-2d-physics-game-engine/blob/master/978-1-4842-2582-0_source%20code/Chapter3/Chapter3.1BroadPhaseMethod/public_html/EngineCore/Core.js
+
+/**
+ * Physics - Calculates and maintains collision resolution and constraints.
+ * @memberof Core
+ * @class
+ * @return {type}  description
+ */
 function Physics() {
   var positionalCorrectionFlag = true;
   // number of relaxtion iterations
@@ -652,7 +725,6 @@ function Physics() {
     }
     // impulse is from s1 to s2 (opposite direction of velocity)
     impulse = tangent.scale(jT);
-    //console.log(impulse);
     s1.velocity = s1.velocity.subtract(impulse.scale(s1.invMass));
     s2.velocity = s2.velocity.add(impulse.scale(s2.invMass));
     s1.angularVelocity -= R1crossT * jT * s1.inertia;
@@ -692,29 +764,47 @@ Indexer.prototype.incrementIndex = function() {
   return (this.bodyIndex += 1);
 };
 
+/**
+ * Events - Allows custom functions to be added to the Engine's main loop.
+ * @memberof Core
+ * @class
+ */
 function Events() {
   this.customEvents = {};
   this.collisionEvents = {};
 }
 
+/**
+ * Runs the provided function during the Engine's main loop
+ *
+ * @param  {type} event description
+ * @return {type}       description
+ */
 Events.prototype.addCustomEvent = function(event) {
   this.customEvents[event.name] = event;
 };
 
+/**
+ * Runs the provided function during the Engine's main loop
+ * The object "collisionInfo" can be accessed by an event function added here
+ *
+ * @param  {type} event description
+ * @return {type}       description
+ */
 Events.prototype.addCollisionEvent = function(event) {
   this.collisionEvents[event.name] = event;
-};
-
-var SupportStruct = function() {
-  this.supportPoint = null;
-  this.supportPointDist = 0;
 };
 
 var bodyIndex = new Indexer();
 
 /**
+ * @namespace Bodies
+ */
+
+/**
  * Body   A Rigid Body, inherited by Rectangle and Circle
  * @class
+ * @memberof Bodies
  * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
  * @param  {number} y                 The Y coordinate of the center of the Body, converted to Vec2
  * @param  {number} mass="1"          The Body's mass
@@ -814,6 +904,13 @@ Body.prototype.update = function(engine) {
   }
 };
 
+/**
+ * Broadphase collision test, compares Bodies' AABBs to check for potential collisions.
+ * Compares Bodies' bounding radii if AABBs are not present on both Bodies.
+ *
+ * @param  {Body} otherShape The Body being tested for collision
+ * @return {bool}            True if a potential collision is detected
+ */
 Body.prototype.broadphaseTest = function(otherShape) {
   // check if both Bodies have a calculated AABB
   if (this.AABB && otherShape.AABB) {
@@ -841,6 +938,12 @@ Body.prototype.boundTest = function(otherShape) {
   return true;
 };
 
+/**
+ * Tests if another Body is within this Body's AABB
+ *
+ * @param  {Body} otherShape The Body being tested for collision
+ * @return {bool}            Returns true if a potential collision has been detected
+ */
 Body.prototype.AABBTest = function(otherShape) {
   var aabbA = this.AABB;
   var aabbB = otherShape.AABB;
@@ -857,6 +960,11 @@ Body.prototype.AABBTest = function(otherShape) {
   return false; // no collision
 };
 
+/**
+ * Calculates the Body's Axis Aligned Bounding Box used for broadphase detection
+ *
+ * @return {AABB}  The minimum x and y and the maximum x and y that can contain this Body
+ */
 Body.prototype.calculateAABB = function() {
   var minX = 999999;
   var maxX = -999999;
@@ -881,9 +989,16 @@ Body.prototype.calculateAABB = function() {
   return AABB;
 };
 
+/**
+ * Finds the minumum and maximum distance between a given normal for all vertices of the Body
+ *
+ * @param  {Vec2} normal The normal, or axis, to be projected on to
+ * @return {Object}      Returns the min and max distances
+ */
 Body.prototype.findInterval = function(normal) {
   normal = normal.perp();
-  var dotProduct = this.vertex[0].dot(normal);
+  var vertex = this.vertex[0];
+  var dotProduct = vertex.dot(normal);
   var current;
 
   var min, max;
@@ -990,6 +1105,22 @@ CollisionInfo.prototype.changeDir = function() {
   this.end = n;
 };
 
+/**
+ * Polygon - A convex polygon made up of vertices
+ * @memberof Bodies
+ * @class
+ * @extends Body
+ * @category Shapes
+ * @param  {Array<Vec2>} vertices     The vertex points that make up the Polygon. Must result in a convex, nondegenerate shape
+ * @param  {number} mass="1"          The Body's mass
+ * @param  {number} friction="0.8"    The friction coefficient, between 0 and 1 is best
+ * @param  {number} restitution="0.2" The restitution coefficient, or bounciness, between 0 and 1 is best
+ * @param  {object} [options]
+ * @param  {boolean} [options.isSensor="false"] If set to true the Body will not resolve collisions
+ * @param  {string} [options.name]    The name of the Body
+ * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
+ * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
+ */
 var Polygon = function(vertices, mass, friction, restitution, options) {
   var self = this;
   // vertex is an array of Vec2
@@ -1045,7 +1176,6 @@ Polygon.prototype.move = function(v) {
  * @param  {number} angle description
  */
 Polygon.prototype.rotate = function(angle) {
-  //angle = angle;
   this.angle += angle;
   // rotate each vertex around the polygon's center
   for (let i = 0; i < this.vertex.length; i++) {
@@ -1273,6 +1403,7 @@ Polygon.prototype.updateInertia = function() {
 
 /**
  * Rectangle - A rectangular Body
+ * @memberof Bodies
  * @class
  * @extends Body
  * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
@@ -1374,6 +1505,7 @@ Rectangle.prototype.updateInertia = function() {
 
 /**
  * Circle - A circular Body
+ * @memberof Bodies
  * @class
  * @extends Body
  * @param  {number} x                 The X coordinate of the center of the Body, converted to Vec2
@@ -1454,6 +1586,11 @@ var RegularPoly = function(x, y, radius, sides, mass, friction, restitution, opt
 };
 
 Common.extend(RegularPoly, Polygon);
+
+var SupportStruct = function() {
+  this.supportPoint = null;
+  this.supportPointDist = 0;
+};
 
 Rectangle.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
@@ -1671,7 +1808,29 @@ Circle.prototype.collidedCircCirc = function(c1, c2, collisionInfo) {
   return true;
 };
 
+Circle.prototype.findInterval = function(normal) {
+  normal = normal.perp();
+  var dotProduct = this.center.dot(normal);
+  var current;
+
+  var min, max;
+  min = dotProduct;
+  max = min;
+
+  // for (let i = 1; i < this.vertex.length; i++) {
+  //   current = this.vertex[i].dot(normal);
+  //   if (current > max) {
+  //     max = current;
+  //   }
+  //   if (current < min) {
+  //     min = current;
+  //   }
+  // }
+  return { min: min, max: max };
+};
+
 // Geometric Tools For Computer Graphics pg 269
+
 Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Polygon") {
@@ -1686,7 +1845,7 @@ Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
 };
 
 Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
-  var overlap1, overlap2, overlap;
+  var overlap;
   if (polyA.bodyID > polyB.bodyID) {
     var polyTmp = polyB;
     polyB = polyA;
@@ -1708,27 +1867,57 @@ Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
   return true;
 };
 
+/**
+ * Detects collision between Polygon and Circle.
+ * Currently the collision info set by this method is incorrect and needs to
+ * consider the objects' relative positions.
+ *
+ * @param  {Circle} otherCirc     The Circle being tested against the Polygon
+ * @param  {type}   collisionInfo The collision info
+ * @return {bool}                 Return true is a collision has occured
+ */
 Polygon.prototype.collidedPolyCirc = function(otherCirc, collisionInfo) {
-  var faceNormal;
+  var config1, config2, overlap;
+
+  var overlapInfo = {
+    minNormal: null,
+    minOverlap: 999999
+  };
+
+  var closestVertex = this.findClosestVertex(otherCirc);
+
+  var axis = closestVertex.subtract(otherCirc.center).normalize();
+  config1 = this.findInterval(axis);
+  config2 = otherCirc.findInterval(axis);
+  overlap = Math.min(config1.max - config2.min, config2.max - config1.min);
+  if (config2.max + otherCirc.radius < config1.min || config1.max < config2.min - otherCirc.radius) {
+    return false;
+  }
+  if (overlap < overlapInfo.minOverlap) {
+    overlapInfo.minOverlap = overlap + otherCirc.radius;
+    overlapInfo.minNormal = axis.perp();
+  }
 
   for (let i = 0; i < this.faceNormal.length; i++) {
-    faceNormal = this.faceNormal[i];
-    var vToCirc = faceNormal.subtract(otherCirc.center);
-    var distance = otherCirc.center.dot(faceNormal);
-    if (distance < otherCirc.radius) {
-      collisionInfo.setInfo(distance - otherCirc.radius, Vec2(0, -1), otherCirc.center);
-
+    var faceNormal = this.faceNormal[i];
+    config1 = this.findInterval(faceNormal);
+    config2 = otherCirc.findInterval(faceNormal);
+    overlap = Math.min(config1.max - config2.min, config2.max - config1.min);
+    if (config2.max + otherCirc.radius < config1.min || config1.max < config2.min - otherCirc.radius) {
       return false;
     }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap + otherCirc.radius;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
   }
+  var depthVec = axis.scale(otherCirc.radius);
+  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal.scale(-1), otherCirc.center.add(depthVec));
+
   return true;
 };
 
 Polygon.prototype.collidedPolyRect = function(polyA, rectB, collisionInfo) {
-  if (polyA.bodyID > rectB.bodyID) {
-    console.log("here");
-  }
-
   var overlapInfo = {
     minNormal: null,
     minOverlap: 999999
@@ -1747,7 +1936,7 @@ Polygon.prototype.collidedPolyRect = function(polyA, rectB, collisionInfo) {
   var supportsB = rectB.findSupportPoint(overlapInfo.minNormal, supportsA[0]);
   var penetrationVector = overlapInfo.minNormal.scale(overlapInfo.minOverlap);
 
-  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal, supportsB);
+  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal, supportsA[0]);
 
   return true;
 };
@@ -1835,6 +2024,25 @@ Polygon.prototype.findSupportPoint = function(dir) {
   }
 
   return supports;
+};
+
+Polygon.prototype.findClosestVertex = function(circ) {
+  var vertex = this.vertex[0];
+
+  var dist = vertex.subtract(circ.center).length();
+  var minDist = dist;
+  var closestVertex = vertex;
+  for (let i = 1; i < this.vertex.length; i++) {
+    vertex = this.vertex[i];
+
+    dist = vertex.subtract(circ.center).length();
+
+    if (dist < minDist) {
+      minDist = dist;
+      closestVertex = vertex;
+    }
+  }
+  return closestVertex;
 };
 
 // Geometrics Tools for Computer Graphics pg.275

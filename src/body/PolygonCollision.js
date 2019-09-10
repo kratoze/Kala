@@ -1,4 +1,5 @@
 // Geometric Tools For Computer Graphics pg 269
+
 Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
   var status = false;
   if (otherShape.type === "Polygon") {
@@ -13,7 +14,7 @@ Polygon.prototype.collisionTest = function(otherShape, collisionInfo) {
 };
 
 Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
-  var overlap1, overlap2, overlap;
+  var overlap;
   if (polyA.bodyID > polyB.bodyID) {
     var polyTmp = polyB;
     polyB = polyA;
@@ -35,27 +36,57 @@ Polygon.prototype.collidedPolyPoly = function(polyA, polyB, collisionInfo) {
   return true;
 };
 
+/**
+ * Detects collision between Polygon and Circle.
+ * Currently the collision info set by this method is incorrect and needs to
+ * consider the objects' relative positions.
+ *
+ * @param  {Circle} otherCirc     The Circle being tested against the Polygon
+ * @param  {type}   collisionInfo The collision info
+ * @return {bool}                 Return true is a collision has occured
+ */
 Polygon.prototype.collidedPolyCirc = function(otherCirc, collisionInfo) {
-  var faceNormal;
+  var config1, config2, overlap;
+
+  var overlapInfo = {
+    minNormal: null,
+    minOverlap: 999999
+  };
+
+  var closestVertex = this.findClosestVertex(otherCirc);
+
+  var axis = closestVertex.subtract(otherCirc.center).normalize();
+  config1 = this.findInterval(axis);
+  config2 = otherCirc.findInterval(axis);
+  overlap = Math.min(config1.max - config2.min, config2.max - config1.min);
+  if (config2.max + otherCirc.radius < config1.min || config1.max < config2.min - otherCirc.radius) {
+    return false;
+  }
+  if (overlap < overlapInfo.minOverlap) {
+    overlapInfo.minOverlap = overlap + otherCirc.radius;
+    overlapInfo.minNormal = axis.perp();
+  }
 
   for (let i = 0; i < this.faceNormal.length; i++) {
-    faceNormal = this.faceNormal[i];
-    var vToCirc = faceNormal.subtract(otherCirc.center);
-    var distance = otherCirc.center.dot(faceNormal);
-    if (distance < otherCirc.radius) {
-      collisionInfo.setInfo(distance - otherCirc.radius, Vec2(0, -1), otherCirc.center);
-
+    var faceNormal = this.faceNormal[i];
+    config1 = this.findInterval(faceNormal);
+    config2 = otherCirc.findInterval(faceNormal);
+    overlap = Math.min(config1.max - config2.min, config2.max - config1.min);
+    if (config2.max + otherCirc.radius < config1.min || config1.max < config2.min - otherCirc.radius) {
       return false;
     }
+    if (overlap < overlapInfo.minOverlap) {
+      overlapInfo.minOverlap = overlap + otherCirc.radius;
+      overlapInfo.minNormal = faceNormal.perp();
+    }
   }
+  var depthVec = axis.scale(otherCirc.radius);
+  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal.scale(-1), otherCirc.center.add(depthVec));
+
   return true;
 };
 
 Polygon.prototype.collidedPolyRect = function(polyA, rectB, collisionInfo) {
-  if (polyA.bodyID > rectB.bodyID) {
-    console.log("here");
-  }
-
   var overlapInfo = {
     minNormal: null,
     minOverlap: 999999
@@ -74,7 +105,7 @@ Polygon.prototype.collidedPolyRect = function(polyA, rectB, collisionInfo) {
   var supportsB = rectB.findSupportPoint(overlapInfo.minNormal, supportsA[0]);
   var penetrationVector = overlapInfo.minNormal.scale(overlapInfo.minOverlap);
 
-  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal, supportsB);
+  collisionInfo.setInfo(overlapInfo.minOverlap, overlapInfo.minNormal, supportsA[0]);
 
   return true;
 };
@@ -162,6 +193,25 @@ Polygon.prototype.findSupportPoint = function(dir) {
   }
 
   return supports;
+};
+
+Polygon.prototype.findClosestVertex = function(circ) {
+  var vertex = this.vertex[0];
+
+  var dist = vertex.subtract(circ.center).length();
+  var minDist = dist;
+  var closestVertex = vertex;
+  for (let i = 1; i < this.vertex.length; i++) {
+    vertex = this.vertex[i];
+
+    dist = vertex.subtract(circ.center).length();
+
+    if (dist < minDist) {
+      minDist = dist;
+      closestVertex = vertex;
+    }
+  }
+  return closestVertex;
 };
 
 // Geometrics Tools for Computer Graphics pg.275
