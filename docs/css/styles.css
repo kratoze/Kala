@@ -1,0 +1,23 @@
+.ui.main.container {
+  width: 100%;
+  /* padding: 40px 0px 0px 0px; */
+  /* margin: 0px -14px 0px -14px; !important */
+}
+
+.ui.menu {
+  border: none;
+  margin: 0px 0px 0px 0px;
+  background: #d0fffe;
+}
+
+.text {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  line-height: 150px;
+}
+
+canvas {
+  position: relative;
+  z-index: -1;
+}

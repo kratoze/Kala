@@ -7,21 +7,26 @@
  * @param  {String} theme="stone"  The theme of the render as a string: space, stone, pool
  * @param  {number} scale  The amount the renderer is scaled by
  */
-function PixiRender(width, height, theme, scale) {
+function PixiRender(width, height, theme, scale, canvas) {
   var self = this;
 
   //Set up PIXI Application
   this.app = new PIXI.Application({
     height: width,
     width: height,
+    view: canvas,
     backgroundColor: 0xd7b7a7,
     antialias: true
   });
 
-  var colors = [0xd9c7f3, 0xf3c7f0, 0x3f417f, 0xdbffda];
+  var colors = [0x0092da, 0xf764fa, 0x3f417f, 0xa45290];
 
   this.scale = scale;
-  document.body.appendChild(this.app.view);
+  console.log(canvas);
+
+  if (!canvas) {
+    document.body.appendChild(this.app.view);
+  }
   this.app.stage.scale.x = this.app.stage.scale.y = scale;
 
   var renderBodies = {};
