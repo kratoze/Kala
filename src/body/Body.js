@@ -17,7 +17,7 @@ var bodyIndex = new Indexer();
  * @param  {boolean} [options.isSensor="false"] If set to true the Body will not resolve collisions
  * @param  {string} [options.name]    The name of the Body
  * @param  {boolean} [options.dampen] If set to true, the Body's velocity will be reduced each frame
- * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by is dampening is true
+ * @param  {number} [options.dampenValue="0.985"] The value that the Body's velocity is reduced by if dampening is true
  */
 function Body(x, y, mass, friction, restitution, options) {
   this.bodyID = Common.incrementIndexer();

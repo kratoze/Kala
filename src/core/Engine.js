@@ -50,13 +50,18 @@ function Engine() {
   };
 
   /**
-   * Removes a Body from the engines Body array by its index
+   * Removes a Body from the engine's Body array by its index
    * @param  {number} bodyIndex The index of the Body to be removed
    */
   this.removeBodyByIndex = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
   };
 
+  /**
+   * Removes a Body from the engine's Body array
+   *
+   * @param  {Body} body The Body to be removed
+   */
   this.removeBody = function(body) {
     var index = this.allBodies.indexOf(body);
     if (index != -1) {
@@ -65,14 +70,27 @@ function Engine() {
     this.hasChanged = true;
   };
 
+  /**
+   * Adds a constraint to the engine's array of constraints
+   * @param  {Constraint} constraint The constraint being added
+   */
   this.addConstraint = function(constraint) {
     this.allConstraints.push(constraint);
   };
 
-  this.removeConstraint = function(bodyIndex) {
-    this.allConstraints.splice(bodyIndex, 1);
+  /**
+   * Removes a constraint by its index
+   *
+   * @param  {number} index The array index of the constraint to be removed
+   */
+  this.removeConstraint = function(index) {
+    this.allConstraints.splice(index, 1);
   };
 
+  /**
+   * Applies gravity to all Bodies
+   *
+   */
   this.applyGravityAllBodies = function() {
     for (let i = 0; i < self.allBodies.length; i++) {
       this.applyGravity(self.allBodies[i]);
@@ -81,6 +99,7 @@ function Engine() {
 
   /**
    * Applies the engine's gravity to a body
+   * Called each time a Body is added to the engine
    * @param  {Body} body The Body gravity is applied to
    */
   this.applyGravity = function(body) {
