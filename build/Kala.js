@@ -223,6 +223,7 @@ function Engine() {
    */
   this.removeBodyByIndex = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
+    this.hasChanged = true;
   };
 
   /**
@@ -469,7 +470,7 @@ function PixiRender(width, height, theme, scale, canvas) {
     var polygonGraphics = renderBodies[polygon.bodyID];
     if (!polygonGraphics) {
       renderBodies[polygon.bodyID] = new PIXI.Graphics();
-      renderBodies[polygon.bodyID].color = colors[Math.floor(Math.random() * colors.length)];
+      polygon.render.color = polygon.render.color ? polygon.render.color : colors[Math.floor(Math.random() * colors.length)];
 
       this.bodyContainer.addChild(renderBodies[polygon.bodyID]);
       polygonGraphics = renderBodies[polygon.bodyID];
@@ -569,7 +570,7 @@ function PixiRender(width, height, theme, scale, canvas) {
     polygonGraphics.clear();
     polygonGraphics.lineStyle(0 / scale, polygon.lineColor || 0x03f8fc);
     polygonGraphics.lineColor;
-    polygonGraphics.beginFill(renderBodies[polygon.bodyID].color, 1);
+    polygonGraphics.beginFill(polygon.render.color, 1);
     polygonGraphics.drawPolygon(polygon.vertexToPath());
     polygonGraphics.endFill();
   };

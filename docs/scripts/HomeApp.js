@@ -37,15 +37,16 @@ var HomeApp = function() {
     engine.allBodies[engine.allBodies.length - 1].rotate(Math.random());
   }
 
-  function spawnPolygon() {
+  function spawnPolygon() {}
+
+  setInterval(function() {
     engine.add(
       new RegularPoly(width / 2, 10, Math.floor(Math.random() * 3) + 1, Math.floor(Math.random() * 7 + 3), 1, 0.2, 0.3)
     );
-    if (engine.allBodies.length > 50) {
-      engine.allBodies.removeBodyByIndex(0);
+    if (engine.allBodies.length > 20) {
+      engine.removeBodyByIndex(4);
     }
-  }
-
+  }, 800);
   function resize() {
     var prevWidth = width || 0;
 

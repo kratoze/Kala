@@ -55,6 +55,7 @@ function Engine() {
    */
   this.removeBodyByIndex = function(bodyIndex) {
     this.allBodies.splice(bodyIndex, 1);
+    this.hasChanged = true;
   };
 
   /**
