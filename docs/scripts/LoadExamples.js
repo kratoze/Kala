@@ -3,7 +3,7 @@
 function loadExamples(callback) {
   var obj = new XMLHttpRequest();
   obj.overrideMimeType("application/json");
-  obj.open("GET", "/Kala/docs/scripts/examplesdata.json", true);
+  obj.open("GET", "/examplesdata.json/", true);
   obj.onreadystatechange = () => {
     if (obj.readyState === 4) {
       if (obj.status === 200) {
