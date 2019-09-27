@@ -19,12 +19,9 @@ var isDying = false;
 
 render.loader.onComplete.add(() => {
   engine.add(playerShip);
-  render.addSprite(playerShip);
   engine.initializeEngineCore(render);
   spawnAsteroids();
-  deathAnimation = new PIXI.AnimatedSprite(
-    render.loader.resources["explosion"].spritesheet.animations["explosion"]
-  );
+  deathAnimation = new PIXI.AnimatedSprite(render.loader.resources["explosion"].spritesheet.animations["explosion"]);
   render.app.stage.addChild(deathAnimation);
   deathAnimation.renderable = false;
   deathAnimation.animationSpeed = 0.1;
@@ -70,9 +67,7 @@ function playerControlsEvent() {
   }
 
   if (UP === false) {
-    engine.allBodies[0].acceleration = engine.allBodies[0].acceleration.scale(
-      0.25
-    );
+    engine.allBodies[0].acceleration = engine.allBodies[0].acceleration.scale(0.25);
   }
   if (SPACE) {
     if (!isShooting) {
@@ -88,12 +83,8 @@ function playerControlsEvent() {
         1,
         { isSensor: true, name: "bullet" }
       );
-      bullet.velocity = Vec2(0, 0).vectorFromAngle(
-        bulletSpeed,
-        engine.allBodies[0].angle
-      );
+      bullet.velocity = Vec2(0, 0).vectorFromAngle(bulletSpeed, engine.allBodies[0].angle);
       engine.add(bullet);
-      render.addSprite(bullet);
     }
   }
 }
@@ -101,37 +92,32 @@ function playerControlsEvent() {
 function wrapObjects() {
   for (let i = 0; i < engine.allBodies.length; i++) {
     if (engine.allBodies[i].hasHit) {
-      engine.removeBody(i);
-      render.removeSprite(i);
+      engine.removeBodyByIndex(i);
       break;
     }
     if (engine.allBodies[i].center.x > width) {
       if (engine.allBodies[i].name === "bullet") {
-        engine.removeBody(i);
-        render.removeSprite(i);
+        engine.removeBodyByIndex(i);
         break;
       }
 
       engine.allBodies[i].move(Vec2(-width, 0));
     } else if (engine.allBodies[i].center.x < 0) {
       if (engine.allBodies[i].name === "bullet") {
-        engine.removeBody(i);
-        render.removeSprite(i);
+        engine.removeBodyByIndex(i);
 
         break;
       }
       engine.allBodies[i].move(Vec2(width, 0));
     } else if (engine.allBodies[i].center.y > height) {
       if (engine.allBodies[i].name === "bullet") {
-        engine.removeBody(i);
-        render.removeSprite(i);
+        engine.removeBodyByIndex(i);
         break;
       }
       engine.allBodies[i].move(Vec2(0, -height));
     } else if (engine.allBodies[i].center.y < 0) {
       if (engine.allBodies[i].name === "bullet") {
-        engine.removeBody(i);
-        render.removeSprite(i);
+        engine.removeBodyByIndex(i);
         break;
       }
       engine.allBodies[i].move(Vec2(0, height));
@@ -142,33 +128,23 @@ function wrapObjects() {
 function collisionEvents() {
   if (
     !isDying &&
-    (engine.collisionInfo.bodyA.name === "player" ||
-      engine.collisionInfo.bodyB.name === "player") &&
-    (engine.collisionInfo.bodyA.name === "asteroid" ||
-      engine.collisionInfo.bodyB.name === "asteroid")
+    (engine.collisionInfo.bodyA.name === "player" || engine.collisionInfo.bodyB.name === "player") &&
+    (engine.collisionInfo.bodyA.name === "asteroid" || engine.collisionInfo.bodyB.name === "asteroid")
   ) {
     isDying = true;
     playerDeath();
-  } else if (
-    engine.collisionInfo.bodyA.name === "asteroid" &&
-    engine.collisionInfo.bodyB.name === "bullet"
-  ) {
+  } else if (engine.collisionInfo.bodyA.name === "asteroid" && engine.collisionInfo.bodyB.name === "bullet") {
     if (!engine.collisionInfo.bodyA.hasHit) {
       engine.collisionInfo.bodyA.hasHit = true;
-      engine.removeBody(engine.collisionInfo.bodyAIndex);
-      render.removeSprite(engine.collisionInfo.bodyAIndex);
+      engine.removeBodyByIndex(engine.collisionInfo.bodyAIndex);
       engine.collisionInfo.bodyB.center = Vec2(-10, 10);
       playerScore++;
       newAsteroid();
     }
-  } else if (
-    engine.collisionInfo.bodyB.name === "asteroid" &&
-    engine.collisionInfo.bodyA.name === "bullet"
-  ) {
+  } else if (engine.collisionInfo.bodyB.name === "asteroid" && engine.collisionInfo.bodyA.name === "bullet") {
     if (!engine.collisionInfo.bodyB.hasHit) {
       engine.collisionInfo.bodyB.hasHit = true;
-      engine.removeBody(engine.collisionInfo.bodyBIndex);
-      render.removeSprite(engine.collisionInfo.bodyBIndex);
+      engine.removeBodyByIndex(engine.collisionInfo.bodyBIndex);
       engine.collisionInfo.bodyA.center = Vec2(-10, 10);
 
       playerScore++;
@@ -189,8 +165,9 @@ setInterval(function() {
 engine.events.addCustomEvent(playerControlsEvent);
 engine.events.addCustomEvent(wrapObjects);
 engine.events.addCollisionEvent(collisionEvents);
-engine.events.addCustomEvent(updateUI);
-
+window.onload = function() {
+  engine.events.addCustomEvent(updateUI);
+};
 function spawnAsteroids() {
   for (let i = 0; i <= maxAsteroids; i++) {
     engine.add(
@@ -199,7 +176,6 @@ function spawnAsteroids() {
         isSensor: false
       })
     );
-    render.addSprite(engine.allBodies[engine.allBodies.length - 1]);
     engine.allBodies[engine.allBodies.length - 1].velocity = Vec2(
       Math.random() * Math.random() < 0.5 ? 10 : -10,
       Math.random() * Math.random() < 0.5 ? 10 : -10
@@ -214,15 +190,11 @@ function newAsteroid() {
       isSensor: false
     })
   );
-  render.addSprite(engine.allBodies[engine.allBodies.length - 1]);
 
   directionX = Math.random() < 0.5 ? 10 : -10;
   directionY = Math.random() < 0.5 ? 10 : -10;
   engine.allBodies[engine.allBodies.length - 1].hasHit = false;
-  engine.allBodies[engine.allBodies.length - 1].velocity = Vec2(
-    Math.random() * directionX,
-    Math.random() * directionY
-  );
+  engine.allBodies[engine.allBodies.length - 1].velocity = Vec2(Math.random() * directionX, Math.random() * directionY);
 }
 
 function playerDeath() {
@@ -244,12 +216,7 @@ function playerDeath() {
       deathAnimation.renderable = false;
       render.app.stage.getChildAt(0).getChildAt(0).renderable = true;
       engine.allBodies[0].velocity = Vec2(0, 0);
-      engine.allBodies[0].move(
-        Vec2(
-          width / 2 - engine.allBodies[0].center.x,
-          height / 2 - engine.allBodies[0].center.y
-        )
-      );
+      engine.allBodies[0].move(Vec2(width / 2 - engine.allBodies[0].center.x, height / 2 - engine.allBodies[0].center.y));
       deathAnimation.stop();
       isDying = false;
       deathLoop = 0;

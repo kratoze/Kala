@@ -9,7 +9,7 @@
 function Physics() {
   var positionalCorrectionFlag = true;
   // number of relaxtion iterations
-  var relaxationCount = 15;
+  var relaxationCount = 40;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 

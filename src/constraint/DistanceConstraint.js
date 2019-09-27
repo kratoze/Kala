@@ -19,9 +19,7 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   var distBA = this.bodyB.center.subtract(this.bodyA.center);
   // find the length of the vector between B and A
   var lengthBA = distBA.length();
-  if (lengthBA < this.length) {
-    return;
-  }
+
   // find the difference between the length and the contraint length.
   // improvements taken from Advanced Character Physics by Thomas Jakobsen
   // where the difference is divided by the length to make the impulse less drastic
@@ -34,8 +32,8 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   // scaled in the correct direction
   impulse = distBA.scale(0.5 * diff);
   // apply the impulses to the bodies
-  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness));
-  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness));
+  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness * 0.895));
+  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness * 0.895));
 };
 
 /**

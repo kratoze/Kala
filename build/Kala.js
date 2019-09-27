@@ -360,14 +360,13 @@ function PixiRender(width, height, theme, scale, canvas) {
     height: width,
     width: height,
     view: canvas,
-    backgroundColor: 0xd7b7a7,
+    backgroundColor: 0xfffbe6,
     antialias: true
   });
 
   var colors = [0x0092da, 0xf764fa, 0x3f417f, 0xa45290];
 
   this.scale = scale;
-  console.log(canvas);
 
   if (!canvas) {
     document.body.appendChild(this.app.view);
@@ -621,7 +620,7 @@ function PixiRender(width, height, theme, scale, canvas) {
 function Physics() {
   var positionalCorrectionFlag = true;
   // number of relaxtion iterations
-  var relaxationCount = 15;
+  var relaxationCount = 40;
   // percentafe of separation to project objects
   var posCorrectionRate = 0.8;
 
@@ -2117,7 +2116,7 @@ function Constraint(bodyA, bodyB, length, stiffness) {
   this.restingAngleB = this.bodyB.angle;
   this.length = length;
   this.stiffness = stiffness;
-  this.minLength = 0.0000001;
+  this.minLength = 0.001;
 }
 
 Constraint.prototype.maintainConstraint = function() {};
@@ -2147,9 +2146,7 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   var distBA = this.bodyB.center.subtract(this.bodyA.center);
   // find the length of the vector between B and A
   var lengthBA = distBA.length();
-  if (lengthBA < this.length) {
-    return;
-  }
+
   // find the difference between the length and the contraint length.
   // improvements taken from Advanced Character Physics by Thomas Jakobsen
   // where the difference is divided by the length to make the impulse less drastic
@@ -2162,8 +2159,8 @@ DistanceConstraint.prototype.maintainConstraint = function(engine) {
   // scaled in the correct direction
   impulse = distBA.scale(0.5 * diff);
   // apply the impulses to the bodies
-  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness));
-  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness));
+  this.bodyA.velocity = this.bodyA.velocity.add(impulse.scale(this.bodyA.invMass * this.stiffness * 0.895));
+  this.bodyB.velocity = this.bodyB.velocity.subtract(impulse.scale(this.bodyB.invMass * this.stiffness * 0.895));
 };
 
 /**

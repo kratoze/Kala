@@ -15,14 +15,13 @@ function PixiRender(width, height, theme, scale, canvas) {
     height: width,
     width: height,
     view: canvas,
-    backgroundColor: 0xd7b7a7,
+    backgroundColor: 0xfffbe6,
     antialias: true
   });
 
   var colors = [0x0092da, 0xf764fa, 0x3f417f, 0xa45290];
 
   this.scale = scale;
-  console.log(canvas);
 
   if (!canvas) {
     document.body.appendChild(this.app.view);
