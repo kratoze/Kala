@@ -95,10 +95,10 @@ for (let i = 0; i < 3; i++) {
 var rect = new Rectangle(10, 20, 30, 3, 0, 0.2, 0.2);
 render.loader.onComplete.add(() => {
   engine.initializeEngineCore(render);
-  //engine.add(triangle);
+  engine.add(triangle);
   engine.add(bounds);
 
-  //engine.add(squares);
+  engine.add(squares);
   engine.movement = true;
 });
 document.addEventListener("keydown", function(e) {
@@ -165,4 +165,4 @@ function createPolygon(event) {
     )
   );
 }
-//engine.events.addCustomEvent(createPolygon(event));
+engine.events.addCustomEvent(createPolygon(event));

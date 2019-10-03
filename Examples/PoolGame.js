@@ -59,15 +59,7 @@ for (let row = 1; row < 6; row++) {
     offSetX += column / 50;
 
     eightBalls.push(
-      new Kala.Circle(
-        width / 2 + offSetX,
-        height / 2 + offSetY,
-        1,
-        0.9,
-        0.2,
-        0.9,
-        { name: "8ball", dampen: true }
-      )
+      new Kala.Circle(width / 2 + offSetX, height / 2 + offSetY, 1, 0.9, 0.2, 0.9, { name: "8ball", dampen: true })
     );
   }
 }
@@ -96,8 +88,9 @@ render.loader.onComplete.add(() => {
   render.app.stage.addChild(line);
 });
 var canvas = document.getElementsByTagName("canvas")[0];
-
-canvas.addEventListener("mousedown", function(e) {
+console.log(canvas);
+window.addEventListener("mousedown", function(e) {
+  console.log("here");
   relMousePosDown = getRelMouseCoords(e);
   if (
     relMousePosDown.x <= engine.allBodies[10].center.x + 5 &&
@@ -109,35 +102,27 @@ canvas.addEventListener("mousedown", function(e) {
   }
 });
 
-window.addEventListener("mouseup", function(e) {
+canvas.addEventListener("mouseup", function(e) {
   relMousePosUp = getRelMouseCoords(e);
   if (isBallClicked) {
-    var angle = Math.atan2(
-      engine.allBodies[10].center.y - relMousePosUp.y,
-      engine.allBodies[10].center.x - relMousePosUp.x
-    );
-    engine.allBodies[10].velocity = Vec2(0, 0).vectorFromAngle(
-      engine.allBodies[10].center.distance(relMousePosUp) * 10,
-      angle
-    );
+    var angle = Math.atan2(engine.allBodies[10].center.y - relMousePosUp.y, engine.allBodies[10].center.x - relMousePosUp.x);
+    engine.allBodies[10].velocity = Vec2(0, 0).vectorFromAngle(engine.allBodies[10].center.distance(relMousePosUp) * 10, angle);
     line.clear();
     isBallClicked = false;
   }
 });
 
-window.addEventListener("mousemove", function(e) {
+canvas.addEventListener("mousemove", function(e) {
   relMousePosMove = getRelMouseCoords(e);
 });
 
 function getRelMouseCoords(event) {
-  return Vec2(event.clientX / 20 - 0.4, event.clientY / 20 - 0.4);
+  console.log(event.offsetX);
+  return Vec2(event.offsetX / 20, event.offsetY / 20);
 }
 
 function potBall() {
-  if (
-    engine.collisionInfo.bodyA.name == "8ball" ||
-    engine.collisionInfo.bodyB.name == "8ball"
-  ) {
+  if (engine.collisionInfo.bodyA.name == "8ball" || engine.collisionInfo.bodyB.name == "8ball") {
     if (engine.collisionInfo.bodyA.name === "8ball") {
       engine.removeBody(engine.collisionInfo.bodyA);
     } else {

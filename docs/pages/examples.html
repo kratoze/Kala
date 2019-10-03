@@ -2,8 +2,75 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <title>Examples</title>
-    <script type="text/javascript" src="../scripts/LoadExamples.js"></script>
+    <title>Kala Physics Engine</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <link rel="stylesheet" href="../css/styles.css" />
+
+    <script type="text/javascript" src="../../build/Kala.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
   </head>
-  <body></body>
+  <body onload="generateSelectOptions();">
+    <div class="ui menu">
+      <a href="../../index.html" class=" item">Kala</a>
+      <div class="right menu">
+        <a href="../out/index.html" class="item">Documentation</a>
+        <a href="" class="item">Examples</a>
+      </div>
+    </div>
+
+    <div class="ui main center aligned container">
+      <select class="ui selection dropdown" name="examples" onchange="loadExample();">
+        <option value="" disable selected>Choose an example</option>
+      </select>
+      <p>You might need to zoom out, sorry!</p>
+      <div id="canvascontainer"></div>
+    </div>
+    <script>
+      const examplesSelect = document.getElementsByTagName("select")[0];
+      const canvasContainer = document.getElementById("canvascontainer");
+
+      var exampleToLoad;
+
+      function generateSelectOptions() {
+        const examplePaths = {
+          "Asteroid.js": "Examples/Asteroid.js",
+          "Chain.js": "Examples/Chain.js",
+          "CirclePolyCollide.js": "Examples/CirclePolyCollide.js",
+          "FallingBox.js": "Examples/FallingBox.js",
+          "PoolGame.js": "Examples/PoolGame.js",
+          "SquareGrid.js": "Examples/SquareGrid.js"
+        };
+
+        Object.keys(examplePaths).forEach(example => {
+          var exampleOption = document.createElement("option");
+          exampleOption.value = examplePaths[example];
+
+          var exampleName = example.substring(0, example.indexOf("."));
+          exampleOption.appendChild(document.createTextNode(exampleName));
+          examplesSelect.appendChild(exampleOption);
+        });
+      }
+
+      function loadExample() {
+        var exampleElement = document.getElementById("example");
+        if (exampleElement) {
+          var canvas = document.getElementById("canvas");
+          //canvas.parentNode.removeChild(canvas);
+          exampleElement.setAttribute("src", "../../" + examplesSelect.options[examplesSelect.selectedIndex].value);
+        }
+        exampleToLoad = document.createElement("script");
+        exampleToLoad.setAttribute("id", "example");
+        exampleToLoad.setAttribute("src", "../../" + examplesSelect.options[examplesSelect.selectedIndex].value);
+        canvasContainer.appendChild(exampleToLoad);
+
+        exampleToLoad.onload = function() {
+          // https://www.html5gamedevs.com/topic/18406-how-to-center-stage-on-browser/
+          render.app.renderer.view.style.position = "absolute";
+          render.app.renderer.view.style.left = ((window.innerWidth - render.app.renderer.width) >> 1) + "px";
+        };
+      }
+    </script>
+  </body>
 </html>

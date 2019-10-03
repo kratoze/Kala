@@ -385,24 +385,24 @@ function PixiRender(width, height, theme, scale, canvas) {
   var circlePNG;
   switch (theme) {
     case "space":
-      rectPNG = "imgs/enemyBlue3.png";
+      rectPNG = "/imgs/enemyBlue3.png";
       this.loader
-        .add("ship", "imgs/AsteroidGame/enemyBlue3.png")
-        .add("asteroid1", "imgs/AsteroidGame/meteorBrown_big1.png")
-        .add("explosion", "imgs/AsteroidGame/ExplosionAnimation.json")
+        .add("ship", "/imgs/AsteroidGame/enemyBlue3.png")
+        .add("asteroid1", "/imgs/AsteroidGame/meteorBrown_big1.png")
+        .add("explosion", "/imgs/AsteroidGame/ExplosionAnimation.json")
         .load(onAssetsLoaded);
       break;
     case "stone":
       rectPNG = "elementMetal011.png";
-      this.loader.add("sheet", "imgs/spritesheet_metal.json").load(onAssetsLoaded);
+      this.loader.add("sheet", "/imgs/spritesheet_metal.json").load(onAssetsLoaded);
 
       break;
     case "pool":
       this.loader
-        .add("wood", "imgs/PoolGameImgs/woodTexture.jpg")
-        .add("whiteball", "imgs/PoolGameImgs/whiteball.png")
-        .add("poolballs", "imgs/PoolGameImgs/redball.png")
-        .add("pot", "imgs/PoolGameImgs/pot.png")
+        .add("wood", "/imgs/PoolGameImgs/woodTexture.jpg")
+        .add("whiteball", "/imgs/PoolGameImgs/whiteball.png")
+        .add("poolballs", "/imgs/PoolGameImgs/redball.png")
+        .add("pot", "/imgs/PoolGameImgs/pot.png")
         .load(onAssetsLoaded);
       break;
     default:
@@ -410,7 +410,7 @@ function PixiRender(width, height, theme, scale, canvas) {
   }
 
   function onAssetsLoaded() {
-    sprites.circleTexture = PIXI.Sprite.from("imgs/circle.png").texture;
+    sprites.circleTexture = PIXI.Sprite.from("/imgs/circle.png").texture;
     switch (theme) {
       case "stone":
         sprites.rectTexture = self.loader.resources["sheet"].textures["elementMetal011.png"];
